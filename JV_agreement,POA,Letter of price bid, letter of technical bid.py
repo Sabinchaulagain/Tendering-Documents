@@ -3,6 +3,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.lib.units import inch
+from reportlab.lib.utils import ImageReader
 from reportlab.lib import colors
 from reportlab.graphics.shapes import Drawing, Rect, Line, String
 import math
@@ -114,6 +115,228 @@ center_style = ParagraphStyle(
     spaceAfter=2,
 )
 
+def add_mobilization_schedule_stamps(canvas, doc):
+    canvas.saveState()
+    try:
+        img1 = ImageReader("lead_stamp.png")
+        canvas.drawImage(img1, 
+                        x=6*inch, 
+                        y=6*inch, 
+                        width=1.5*inch, 
+                        height=0.75*inch, 
+                        mask='auto',
+                        preserveAspectRatio=True)
+        
+        img2 = ImageReader("lead_signature.png")
+        canvas.drawImage(img2,
+                        x=4.5*inch,
+                        y=6*inch,
+                        width=1.5*inch,
+                        height=0.75*inch,
+                        mask='auto',
+                        preserveAspectRatio=True)
+      
+        img4 = ImageReader("partner_stamp.png")
+        canvas.drawImage(img4,
+                        x=5.2*inch,
+                        y=6.1*inch,
+                        width=1.5*inch,
+                        height=0.75*inch,
+                        mask='auto',
+                        preserveAspectRatio=True)
+        
+    except Exception as e:
+        # Fallback text if images not found
+        canvas.setFont("Helvetica-Bold", 10)
+        canvas.setFillColorRGB(1, 0, 0)
+        
+        print(f"Warning: Could not load stamp images - using text placeholders. Error: {e}")
+    finally:
+        canvas.restoreState()
+        
+def add_technical_purposal_stamps(canvas, doc):
+    canvas.saveState()
+    try:
+        img1 = ImageReader("lead_stamp.png")
+        canvas.drawImage(img1, 
+                        x=6*inch, 
+                        y=0.5*inch, 
+                        width=1.5*inch, 
+                        height=0.75*inch, 
+                        mask='auto',
+                        preserveAspectRatio=True)
+        
+        img2 = ImageReader("lead_signature.png")
+        canvas.drawImage(img2,
+                        x=4.5*inch,
+                        y=0.5*inch,
+                        width=1.5*inch,
+                        height=0.75*inch,
+                        mask='auto',
+                        preserveAspectRatio=True)
+      
+        img4 = ImageReader("partner_stamp.png")
+        canvas.drawImage(img4,
+                        x=5.2*inch,
+                        y=0.6*inch,
+                        width=1.5*inch,
+                        height=0.75*inch,
+                        mask='auto',
+                        preserveAspectRatio=True)
+        
+    except Exception as e:
+        # Fallback text if images not found
+        canvas.setFont("Helvetica-Bold", 10)
+        canvas.setFillColorRGB(1, 0, 0)
+        
+        print(f"Warning: Could not load stamp images - using text placeholders. Error: {e}")
+    finally:
+        canvas.restoreState()
+        
+def add_jv_agreement_stamps(canvas, doc):
+    canvas.saveState()
+    try:
+        img1 = ImageReader("lead_stamp.png")
+        canvas.drawImage(img1, 
+                        x=0.4*inch, 
+                        y=3*inch, 
+                        width=1.5*inch, 
+                        height=0.75*inch, 
+                        mask='auto',
+                        preserveAspectRatio=True)
+    
+        img2 = ImageReader("lead_signature.png")
+        canvas.drawImage(img2,
+                        x=1.1*inch,
+                        y=3*inch,
+                        width=1.5*inch,
+                        height=0.75*inch,
+                        mask='auto',
+                        preserveAspectRatio=True)
+        
+        img3 = ImageReader("partner_stamp.png")
+        canvas.drawImage(img3,
+                        x=4.4*inch,
+                        y=3*inch,
+                        width=1.5*inch,
+                        height=0.75*inch,
+                        mask='auto',
+                        preserveAspectRatio=True)
+        
+        img4 = ImageReader("partner_signature.png")
+        canvas.drawImage(img4,
+                        x=5*inch,
+                        y=3.1*inch,
+                        width=1.5*inch,
+                        height=0.75*inch,
+                        mask='auto',
+                        preserveAspectRatio=True)
+        
+    except Exception as e:
+        canvas.setFont("Helvetica-Bold", 10)
+        canvas.setFillColorRGB(1, 0, 0)
+        
+        print(f"Warning: Could not load stamp images - using text placeholders. Error: {e}")
+    finally:
+        canvas.restoreState()
+        
+        
+def add_poa_stamps(canvas, doc):
+    canvas.saveState()
+    try:
+        img1 = ImageReader("lead_stamp.png")
+        canvas.drawImage(img1, 
+                        x=0.4*inch, 
+                        y=3.5*inch, 
+                        width=1.5*inch, 
+                        height=0.75*inch, 
+                        mask='auto',
+                        preserveAspectRatio=True)
+    
+        img2 = ImageReader("lead_signature.png")
+        canvas.drawImage(img2,
+                        x=1.1*inch,
+                        y=3.5*inch,
+                        width=1.5*inch,
+                        height=0.75*inch,
+                        mask='auto',
+                        preserveAspectRatio=True)
+        
+        img3 = ImageReader("partner_stamp.png")
+        canvas.drawImage(img3,
+                        x=4.4*inch,
+                        y=3.5*inch,
+                        width=1.5*inch,
+                        height=0.75*inch,
+                        mask='auto',
+                        preserveAspectRatio=True)
+        
+        img4 = ImageReader("partner_signature.png")
+        canvas.drawImage(img4,
+                        x=5*inch,
+                        y=3.6*inch,
+                        width=1.5*inch,
+                        height=0.75*inch,
+                        mask='auto',
+                        preserveAspectRatio=True)
+        
+        img5 = ImageReader("lead_signature.png")
+        canvas.drawImage(img5,
+                        x=0.5*inch,
+                        y=4.75*inch,
+                        width=1.5*inch,
+                        height=0.75*inch,
+                        mask='auto',
+                        preserveAspectRatio=True)    
+    except Exception as e:
+        # Fallback text if images not found
+        canvas.setFont("Helvetica-Bold", 10)
+        canvas.setFillColorRGB(1, 0, 0)
+        
+        print(f"Warning: Could not load stamp images - using text placeholders. Error: {e}")
+    finally:
+        canvas.restoreState()
+        
+def add_bid_letter_stamp(canvas, doc):
+    canvas.saveState()
+    try:
+        img1 = ImageReader("lead_stamp.png")
+        canvas.drawImage(img1, 
+                        x=1.3*inch, 
+                        y=1.5*inch, 
+                        width=1.5*inch, 
+                        height=0.75*inch, 
+                        mask='auto',
+                        preserveAspectRatio=True)
+        
+        img2 = ImageReader("lead_signature.png")
+        canvas.drawImage(img2,
+                        x=0.5*inch,
+                        y=1.5*inch,
+                        width=1.5*inch,
+                        height=0.75*inch,
+                        mask='auto',
+                        preserveAspectRatio=True)
+      
+        img4 = ImageReader("partner_stamp.png")
+        canvas.drawImage(img4,
+                        x=2.1*inch,
+                        y=1.5*inch,
+                        width=1.5*inch,
+                        height=0.75*inch,
+                        mask='auto',
+                        preserveAspectRatio=True)
+        
+    except Exception as e:
+        # Fallback text if images not found
+        canvas.setFont("Helvetica-Bold", 10)
+        canvas.setFillColorRGB(1, 0, 0)
+        
+        print(f"Warning: Could not load stamp images - using text placeholders. Error: {e}")
+    finally:
+        canvas.restoreState()
+       
+
 # --- Helper Functions ---
 def build_letterhead(doc_width, jv_name, jv_address, email_address):
     header_data = [
@@ -223,7 +446,7 @@ def create_mobilization_schedule_pdf(bid_number, contract_name, jv_name, jv_addr
         add_paragraphs(elements, body_texts, body_style)
         
         # Build document
-        doc.build(elements)
+        doc.build(elements, onFirstPage=add_mobilization_schedule_stamps, onLaterPages=add_technical_purposal_stamps)
         print(f"✅ Mobilization Schedule PDF created: {filename}")
     except Exception as e:
         print(f"❌ Failed to create Mobilization Schedule PDF: {e}")
@@ -331,9 +554,8 @@ def create_work_methodology_pdf(bid_number, contract_name, bid_date, jv_name, jv
         elements.append(Paragraph("<b><u>Relations Description of relationship between Head office & Site Office Management</u></b>", title_center_large))
         elements.append(Paragraph("The full authority will be given to the Contract Manager. The head office, as requested by the Contract Manager will furnish financial management. Site office will inform all its major Activities including progress of the work to head office from time to tine interval. The head office will solve any major dispute which cannot be solved by the Contract Manager.", body_style))        
         elements.append(PageBreak())
-    
 
-        doc.build(elements)
+        doc.build(elements, onFirstPage=add_technical_purposal_stamps, onLaterPages=add_technical_purposal_stamps)
         print(f"✅ Work Methodology PDF created: {filename}")
     except Exception as e:
         print(f"❌ Failed to create Work Methodology PDF: {e}")
@@ -376,7 +598,7 @@ def create_technical_bid_pdf(bid_number, contract_name, bid_date, bidder_name, j
         ]
         add_paragraphs(elements, body_texts, body_style)
 
-        doc.build(elements)
+        doc.build(elements, onFirstPage=add_bid_letter_stamp)
         print(f"✅ Technical Bid PDF created: {filename}")
     except Exception as e:
         print(f"❌ Failed to create Technical Bid PDF: {e}")
@@ -428,7 +650,7 @@ def create_price_bid_pdf(bid_number, contract_name, bid_date, bidder_name, jv_na
         ]
         add_paragraphs(elements, footer_texts, body_style)
 
-        doc.build(elements)
+        doc.build(elements, onFirstPage=add_bid_letter_stamp)
         print(f"✅ Price Bid PDF created: {filename}")
     except Exception as e:
         print(f"❌ Failed to create Price Bid PDF: {e}")
@@ -496,7 +718,7 @@ def create_jv_agreement_pdf(bid_number, contract_name, bid_date, employer_name, 
         add_paragraphs(elements, poa_texts, justify_style, spacing=12)
         elements.append(Table(sigs, colWidths=[3.5 * inch, 3.5 * inch]))
 
-        doc.build(elements)
+        doc.build(elements, onFirstPage=add_jv_agreement_stamps, onLaterPages=add_poa_stamps)
         print(f"✅ JV Agreement & POA PDF created: {filename}")
     except ValueError as e:
         print(f"❌ Validation Error: {e}")
@@ -676,7 +898,7 @@ def create_org_chart_pdf(bid_number, contract_name, bid_date, jv_name, jv_addres
                 add_arrow(d, x + box_w/2, prev_y, x + box_w/2, y + box_h)
 
         elements.append(d)
-        doc.build(elements)
+        doc.build(elements, onFirstPage=add_technical_purposal_stamps)
         print(f"✅ Organizational chart created: {filename}")
     except Exception as e:
         print(f"❌ Failed to create Organizational Chart PDF: {e}")
