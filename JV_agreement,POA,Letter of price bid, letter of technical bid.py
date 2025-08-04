@@ -9,7 +9,7 @@ from reportlab.graphics.shapes import Drawing, Rect, Line, String
 import math
 import os
 
-# --- Constants ---
+# --- Constants for testing---
 DEFAULT_BID_NUMBER = "JPM-NCB-14-2081/082"
 DEFAULT_CONTRACT_NAME = "Buildings Construction Work of Satyavadi High School, Ja.Na.Pa. 11, Bajhang"
 DEFAULT_DATE = "July 21, 2025"
@@ -957,3 +957,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
