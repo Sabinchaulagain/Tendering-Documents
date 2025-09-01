@@ -10,21 +10,21 @@ import math
 import os
 
 # --- Constants for testing---
-DEFAULT_BID_NUMBER = "JPM-NCB-14-2081/082"
-DEFAULT_CONTRACT_NAME = "Buildings Construction Work of Satyavadi High School, Ja.Na.Pa. 11, Bajhang"
-DEFAULT_DATE = "July 21, 2025"
-DEFAULT_BIDDER_NAME = "Sabin Chaulagain"
-DEFAULT_EMPLOYER_NAME = "Jayaprithivi Municipality, Bajhang"
-DEFAULT_EMPLOYER_ADDRESS = "Bajhang, Nepal"
+DEFAULT_BID_NUMBER = "MBUST/W/NCB-01/2082/83"
+DEFAULT_CONTRACT_NAME = "Construction of Undergraduate Program Building Block-2 for Madan Bhandari University of Science and Technology"
+DEFAULT_DATE = "September 5, 2025"
+DEFAULT_BIDDER_NAME = "Arjun Acharya"
+DEFAULT_EMPLOYER_NAME = "Madan Bhandari University of Science and Technology Chitlang"
+DEFAULT_EMPLOYER_ADDRESS = "Thaha Municipality Ward 9, Nepal"
 DEFAULT_LEAD_ORG = "Eco Builders & Engineers Pvt. Ltd."
-DEFAULT_PARTNER_ORG = "Reshiva Construction Sewa Pvt. Ltd."
+DEFAULT_PARTNER_ORG = "Natural Furnishing & Construction Pvt. Ltd."
 DEFAULT_LEAD_SHORT = "Eco"
-DEFAULT_PARTNER_SHORT = "Reshiva"
+DEFAULT_PARTNER_SHORT = "Natural"
 DEFAULT_LEAD_ADDRESS = "Gokarneshwor-06, Kathmandu"
-DEFAULT_PARTNER_ADDRESS = "Baneshwor-10, Nepal"
-DEFAULT_EMAIL = "ecobuilders12@gmail.com"
+DEFAULT_PARTNER_ADDRESS = "Kirtipur-01, Kathmandu"
+DEFAULT_EMAIL = "naturalfurnishing2016@gmail.com"
 DEFAULT_MD_LEAD = "Mr. Sabin Chaulagain"
-DEFAULT_MD_PARTNER = "Mr. Sudharshan Chaulagain"
+DEFAULT_MD_PARTNER = "Mr. Arjun Acharya"
 DEFAULT_LEAD_SHARE = 51
 DEFAULT_PARTNER_SHARE = 49
 
@@ -127,7 +127,7 @@ def add_mobilization_schedule_stamps(canvas, doc):
                         mask='auto',
                         preserveAspectRatio=True)
         
-        img2 = ImageReader("lead_signature.png")
+        img2 = ImageReader("bidder_signature.png")
         canvas.drawImage(img2,
                         x=4.5*inch,
                         y=6*inch,
@@ -166,7 +166,7 @@ def add_technical_purposal_stamps(canvas, doc):
                         mask='auto',
                         preserveAspectRatio=True)
         
-        img2 = ImageReader("lead_signature.png")
+        img2 = ImageReader("bidder_signature.png")
         canvas.drawImage(img2,
                         x=4.5*inch,
                         y=0.5*inch,
@@ -225,7 +225,7 @@ def add_jv_agreement_stamps(canvas, doc):
         
         img4 = ImageReader("partner_signature.png")
         canvas.drawImage(img4,
-                        x=5*inch,
+                        x=5.4*inch,
                         y=3.1*inch,
                         width=1.5*inch,
                         height=0.75*inch,
@@ -247,7 +247,7 @@ def add_poa_stamps(canvas, doc):
         img1 = ImageReader("lead_stamp.png")
         canvas.drawImage(img1, 
                         x=0.4*inch, 
-                        y=3.5*inch, 
+                        y=4.2*inch, 
                         width=1.5*inch, 
                         height=0.75*inch, 
                         mask='auto',
@@ -256,7 +256,7 @@ def add_poa_stamps(canvas, doc):
         img2 = ImageReader("lead_signature.png")
         canvas.drawImage(img2,
                         x=1.1*inch,
-                        y=3.5*inch,
+                        y=4.2*inch,
                         width=1.5*inch,
                         height=0.75*inch,
                         mask='auto',
@@ -265,7 +265,7 @@ def add_poa_stamps(canvas, doc):
         img3 = ImageReader("partner_stamp.png")
         canvas.drawImage(img3,
                         x=4.4*inch,
-                        y=3.5*inch,
+                        y=4.2*inch,
                         width=1.5*inch,
                         height=0.75*inch,
                         mask='auto',
@@ -273,17 +273,17 @@ def add_poa_stamps(canvas, doc):
         
         img4 = ImageReader("partner_signature.png")
         canvas.drawImage(img4,
-                        x=5*inch,
-                        y=3.6*inch,
+                        x=5.4*inch,
+                        y=4.3*inch,
                         width=1.5*inch,
                         height=0.75*inch,
                         mask='auto',
                         preserveAspectRatio=True)
         
-        img5 = ImageReader("lead_signature.png")
+        img5 = ImageReader("bidder_signature.png")
         canvas.drawImage(img5,
                         x=0.5*inch,
-                        y=4.75*inch,
+                        y=5.5*inch,
                         width=1.5*inch,
                         height=0.75*inch,
                         mask='auto',
@@ -309,7 +309,7 @@ def add_bid_letter_stamp(canvas, doc):
                         mask='auto',
                         preserveAspectRatio=True)
         
-        img2 = ImageReader("lead_signature.png")
+        img2 = ImageReader("bidder_signature.png")
         canvas.drawImage(img2,
                         x=0.5*inch,
                         y=1.5*inch,
@@ -594,7 +594,7 @@ def create_technical_bid_pdf(bid_number, contract_name, bid_date, bidder_name, j
             "j) We agree to permit the Employer/DP or its representative to inspect our accounts and records and other documents relating to the bid submission and to have them audited by author appointed by the Employer.",
             "k) If our Bid is accepted we commit to mobilizing key equipment and personnel in accordance with the requirements set forth in section III (Evaluation and Qualification Criteria) and our technical proposal, or as otherwise agreed with the employer.",
             "l) We declare that we have not running contracts more than five (5) in accordance with ITB 4.9",
-            f"Name: <b>{bidder_name}</b><br/>In the Capacity of Attorney Person<br/><br/><br/><br/><br/><br/><br/><br/>Signed...<br/>Duly authorized to sign the Bid for and on behalf of <b>{jv_name}</b><br/>Date: <b>{bid_date}</b>"
+            f"Name: <b>{bidder_name}</b><br/>In the Capacity of Attorney Person<br/><br/><br/><br/><br/><br/><br/>Signed...<br/>Duly authorized to sign the Bid for and on behalf of <b>{jv_name}</b><br/>Date: <b>{bid_date}</b>"
         ]
         add_paragraphs(elements, body_texts, body_style)
 
@@ -703,13 +703,11 @@ def create_jv_agreement_pdf(bid_number, contract_name, bid_date, employer_name, 
         # --- Power of Attorney ---
         elements.append(build_letterhead(doc.width, jv_name, jv_address, email_address))
         elements.append(Spacer(1, 12))
-        elements.append(Paragraph("POWER OF ATTORNEY", section_title_big))
-        elements.append(Spacer(1, 12))
         elements.append(Paragraph(f"Date: {bid_date}", date_style))
+        elements.append(Paragraph( f"<b>To,<br/>{employer_name},<br/>{employer_address}.</b>", justify_style))
+        elements.append(Paragraph(f"<b><u>Subject: Power of Attorney</u></b>", title_center_large))
 
         poa_texts = [
-            f"<b>To,<br/>{employer_name},<br/>{employer_address}.</b>",
-            f"&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<b><u>Subject: Power of Attorney</u></b> ",
             f"For: <b>{contract_name}</b> and Invitation for Bids No.: <b>{bid_number}</b>",
             f"Dear sir,<br/>Known all men by these presents that we the undersigned, All Authorized JV Partners lawfully authorized to represent and act on behalf of the said form under the company Act do hereby authorized <b>{bidder_name}, authorized representative of JV</b> whose specimen signature appears as given below to run all business activities signing joint venture/preparation/signing/providing/Qualification and bid, withdrawal and modification of bid, negotiable with the Employer, execute the contract and conduct all necessary dents/ agreements with all project, run all banking activities, to authorize any other person to represent on behalf of his authorization within Nepal and abroad for Contract mentioned above.",
             f"This undersigned shall acknowledge the Legal effects of the signature of the said attorney holder after the signing and sealing of power of attorney.",
@@ -957,4 +955,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
