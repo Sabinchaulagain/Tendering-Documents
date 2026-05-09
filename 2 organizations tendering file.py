@@ -11,25 +11,34 @@ from copy import deepcopy
 import math
 import os
 
-# --- Constants for testing---
-DEFAULT_BID_NUMBER = "Nagarjun/NCB/W/15/2082-83"
-DEFAULT_CONTRACT_NAME = "Ward no.8 Office Building Construction Works"
-DEFAULT_DATE = "November 12, 2025"
-DEFAULT_BIDDER_NAME = "Sudharshan Chaulagain"
-DEFAULT_EMPLOYER_NAME = "Nagarjun Municipality"
-DEFAULT_EMPLOYER_ADDRESS = "Harisiddhi, Sitapaila"
-DEFAULT_LEAD_ORG = "Eco Builders & Engineers Pvt. Ltd."
-DEFAULT_PARTNER_ORG = "Reshiva Construction Sewa Pvt. Ltd."
-DEFAULT_LEAD_SHORT = "Eco"
-DEFAULT_PARTNER_SHORT = "Reshiva"
-DEFAULT_LEAD_ADDRESS = "Gokarneshwor-06, Kathmandu"
-DEFAULT_PARTNER_ADDRESS = "Baneshwor-10, Kathmandu"
-DEFAULT_EMAIL = "ecobuilders12@gmail.com"
-DEFAULT_MD_LEAD = "Mr. Sabin Chaulagain"
-DEFAULT_MD_PARTNER = "Mr. Sudharshan Chaulagain"
-DEFAULT_LEAD_SHARE = 51
-DEFAULT_PARTNER_SHARE = 49
+# --- Directory Setup ---
+INPUT_DIR = "Inputs"
+OUTPUT_DIR = "Outputs"
 
+# Ensure directories exist
+os.makedirs(INPUT_DIR, exist_ok=True)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+# --- Constants for testing---
+DEFAULT_BID_NUMBER = "NCB/TUIOST/WORKS/2082/083-01"
+DEFAULT_CONTRACT_NAME = "CONSTRUCTION OF ADMINISTRATIVE BUILDING OF DEAN OFFICE"
+DEFAULT_DATE = "May 5, 2026"
+DEFAULT_BIDDER_NAME = "Arjun Acharya"
+DEFAULT_EMPLOYER_NAME = "INSTITUTE OF SCIENCE AND TECHNOLOGY OFFICE OF THE DEAN"
+DEFAULT_EMPLOYER_ADDRESS = "KIRTIPUR, KATHMANDU"
+DEFAULT_LEAD_ORG = "Natural Furnishing & Construction Pvt. Ltd."
+DEFAULT_PARTNER_ORG = "Hariyali Construction Pvt. Ltd."
+DEFAULT_BID_ORG = "Natural Furnishing & Construction Pvt. Ltd."
+DEFAULT_LEAD_SHORT = "Natural"
+DEFAULT_PARTNER_SHORT = "Hariyali"
+DEFAULT_LEAD_ADDRESS = "Kirtipur-01, Kathmadnu"
+DEFAULT_PARTNER_ADDRESS = "Koteshwor-32, Kathmandu"
+DEFAULT_JV_ADDRESS = "Kirtipur-01, Kathmadnu"
+DEFAULT_EMAIL = "arjunnatural123@gmail.com"
+DEFAULT_MD_LEAD = "Mr. Arjun Acharya"
+DEFAULT_MD_PARTNER = "Mrs. Bikash Lama"
+DEFAULT_LEAD_SHARE = 60
+DEFAULT_PARTNER_SHARE = 40
 
 styles = getSampleStyleSheet()
 
@@ -117,33 +126,7 @@ center_style = ParagraphStyle(
     spaceAfter=2,
 )
 
-
-
-def merge_with_letterhead(letterhead_path, content_path, output_path):
-    content = PdfReader(content_path)
-    writer = PdfWriter()
-
-    for i in range(len(content.pages)):
-        base = PdfReader(letterhead_path).pages[0]
-        base = deepcopy(base)
-        base.merge_page(content.pages[i])
-        writer.add_page(base)
-
-    with open(output_path, "wb") as f:
-        writer.write(f)
-
-    print(f"✅ Final merged PDF created: {output_path}")
-
-
-date_style = ParagraphStyle(
-    name='DateRight',
-    parent=styles['Normal'],
-    fontName='Helvetica',
-    fontSize=10,
-    alignment=TA_RIGHT,
-    spaceAfter=8,
-)
-
+# --- POA specific styles ---
 poa_title_style = ParagraphStyle(
     name="POATitle",
     parent=styles["Heading1"],
@@ -185,6 +168,25 @@ poa_bold_right = ParagraphStyle(
     fontName="Helvetica-Bold"
 )
 
+def merge_with_letterhead(letterhead_path, content_path, output_path):
+    try:
+        content = PdfReader(content_path)
+        writer = PdfWriter()
+
+        for i in range(len(content.pages)):
+            base = PdfReader(letterhead_path).pages[0]
+            base = deepcopy(base)
+            base.merge_page(content.pages[i])
+            writer.add_page(base)
+
+        with open(output_path, "wb") as f:
+            writer.write(f)
+
+        print(f"✅ Final merged PDF created: {os.path.basename(output_path)}")
+    except Exception as e:
+        print(f"⚠️ Warning: Could not merge with letterhead ({e}). Outputting standard PDF instead: {os.path.basename(output_path)}")
+        if os.path.exists(content_path):
+            os.rename(content_path, output_path)
 
 def create_poa_with_declaration_pdf(
     bid_number,
@@ -192,14 +194,19 @@ def create_poa_with_declaration_pdf(
     bid_date,
     employer_name,
     employer_address,
-    bidder_name,
-    org_name,
+    auth_name,         # The person receiving the power for this specific company
+    auth_org,          # The organization of the person receiving the power
+    auth_address,      # The address of the person receiving the power
+    md_name,           # The MD giving the power
+    org_name,          # The company giving the power
     org_address,
     letterhead_file,
-    output_name
+    output_name,
+    stamper_func=None
 ):
-
-    temp_file = "temp_poa_decl.pdf"
+    temp_file = os.path.join(OUTPUT_DIR, "temp_poa_decl.pdf")
+    full_output_name = os.path.join(OUTPUT_DIR, output_name)
+    full_letterhead_path = os.path.join(INPUT_DIR, letterhead_file)
 
     doc = SimpleDocTemplate(
         temp_file,
@@ -213,7 +220,7 @@ def create_poa_with_declaration_pdf(
     elements = []
 
     # -------- PAGE 1 --------
-    elements.append(Paragraph(f"<b>Date: {bid_date}</b>", date_style))
+    elements.append(Paragraph(f"<b>Date: {bid_date}</b>", ParagraphStyle(name='DateRight10', parent=date_style, fontSize=10)))
     elements.append(Spacer(1, 8))
     elements.append(Paragraph(f"<b>To,<br/>{employer_name},<br/>{employer_address}</b>", poa_body))
     elements.append(Spacer(1, 12))
@@ -221,7 +228,7 @@ def create_poa_with_declaration_pdf(
     elements.append(Spacer(1, 10))
 
     elements.append(Paragraph(
-        f"Known all mean by these presents that we the under designed, Board of Directors lawfully authorized to represent and act on behalf of the said firm under the Company Act do hereby authorize <b>{bidder_name}</b> of <b>{org_name}</b> Having its head office at {org_address}, Whose specimen signature appears as given below to run all business activities for, Modification negotiable with the Employer, dealing with running bill , Final bill and all the task of related offices operating by his single signature or to authorize any other person to operate on behalf of his authorization within Nepal and abroad, This under designed shall acknowledge the legal effects of the signature of the said attorney holder after the signing and sealing of the power of attorney.",
+        f"Known all men by these presents that we the undersigned, Board of Directors lawfully authorized to represent and act on behalf of the said firm under the Company Act do hereby authorize <b>{auth_name}</b> of <b>{auth_org}</b> Having its head office at {auth_address}, Whose specimen signature appears as given below to run all business activities for, negotiable with the Employer, dealing with running bill , Final bill and all the task of related offices operating by his single signature or to authorize any other person to operate on behalf of his authorization within Nepal and abroad, This under designed shall acknowledge the legal effects of the signature of the said attorney holder after the signing and sealing of the power of attorney.",
         poa_body
     ))
 
@@ -230,21 +237,18 @@ def create_poa_with_declaration_pdf(
     elements.append(Spacer(1, 12))
     elements.append(Paragraph(f"For: <b>{contract_name}</b> and Invitation for Bids No.: <b>{bid_number}</b>", poa_body))
 
+    # Fix signatures using a table to align them vertically
+    sig_data = [
+        [Paragraph("<b>………………………</b><br/><b>Signature of Authorized Representative</b><br/>" + f"<b>{auth_name}</b>", poa_body),
+         Paragraph("<b>………………………</b><br/>" + f"<b>{md_name}</b><br/><b>Managing Director</b><br/><b>{org_name}</b>", poa_bold_right)]
+    ]
     elements.append(Spacer(1, 60))
-    elements.append(Paragraph("<b>………………………</b>", poa_body))
-    elements.append(Paragraph("<b>Signature of Authorized Representative</b>", poa_body))
-    elements.append(Paragraph(bidder_name, poa_bold))
-
-    elements.append(Spacer(1, 35))
-    elements.append(Paragraph("………………………", poa_bold_right))
-    elements.append(Paragraph(bidder_name, poa_bold_right))
-    elements.append(Paragraph("Managing Director", poa_bold_right))
-    elements.append(Paragraph(org_name, poa_bold_right))
+    elements.append(Table(sig_data, colWidths=[3.5*inch, 3.5*inch]))
 
     elements.append(PageBreak())
 
     # -------- PAGE 2 --------
-    elements.append(Paragraph(f"<b>Date: {bid_date}</b>", date_style))
+    elements.append(Paragraph(f"<b>Date: {bid_date}</b>", ParagraphStyle(name='DateRight10', parent=date_style, fontSize=10)))
     elements.append(Spacer(1, 8))
     elements.append(Paragraph(f"<b>To,<br/>{employer_name},<br/>{employer_address}</b>", poa_body))
     elements.append(Spacer(1, 8))
@@ -264,245 +268,154 @@ def create_poa_with_declaration_pdf(
     elements.append(Paragraph("Thanking you.", poa_body))
     elements.append(Spacer(1, 12))
     elements.append(Paragraph("Sincerely Yours,", poa_body))
-    elements.append(Spacer(1, 52))
+    
+    elements.append(Spacer(1, 40))
     elements.append(Paragraph("Signature", poa_body))
-    elements.append(Paragraph(f"Name: <b>{bidder_name}</b>", poa_body))
+    elements.append(Paragraph(f"Name: <b>{md_name}</b>", poa_body))
     elements.append(Paragraph("Designation: <b>Managing Director</b>", poa_body))
     elements.append(Paragraph(f"Authorized to sign on behalf of : <b>{org_name}</b>", poa_body))
-    elements.append(Spacer(1, 64))
+    elements.append(Spacer(1, 75))
     elements.append(Paragraph("Office stamp of the organization……………………", poa_body))
 
-    doc.build(elements)
+    if stamper_func:
+        doc.build(elements, onFirstPage=stamper_func, onLaterPages=stamper_func)
+    else:
+        doc.build(elements)
 
-    merge_with_letterhead(letterhead_file, temp_file, output_name)
-    os.remove(temp_file)
+    merge_with_letterhead(full_letterhead_path, temp_file, full_output_name)
+    if os.path.exists(temp_file):
+        os.remove(temp_file)
 
+def make_indiv_poa_stamper(stamp_img, md_sig_img, auth_sig_img):
+    """Creates a custom canvas callback for individual POA pages."""
+    def stamper(canvas, doc):
+        canvas.saveState()
+        try:
+            if doc.page == 1:
+                # Left Side: Authorized Representative
+                b_sig = ImageReader(os.path.join(INPUT_DIR, auth_sig_img))
+                canvas.drawImage(b_sig, x=0.6*inch, y=3.6*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
+                
+                # Right Side: Managing Director giving power
+                s_img = ImageReader(os.path.join(INPUT_DIR, stamp_img))
+                canvas.drawImage(s_img, x=5.8*inch, y=4*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
+                
+                sig = ImageReader(os.path.join(INPUT_DIR, md_sig_img))
+                canvas.drawImage(sig, x=6.8*inch, y=4*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
+            else:
+                # Page 2: Declaration (MD signature and stamp on the left)
+                s_img = ImageReader(os.path.join(INPUT_DIR, stamp_img))
+                canvas.drawImage(s_img, x=2.4*inch, y=2.9*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
+                
+                sig = ImageReader(os.path.join(INPUT_DIR, md_sig_img))
+                canvas.drawImage(sig, x=1.0*inch, y=4.45*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
+        except Exception as e:
+            pass # Suppress to keep output clean
+        finally:
+            canvas.restoreState()
+    return stamper
 
-def create_lead_poa_pdf(*args):
-    create_poa_with_declaration_pdf(*args)
+def create_lead_poa_pdf(bid_number, contract_name, bid_date, employer_name, employer_address, md_name, org_name, org_address, letterhead_file, output_name):
+    # For lead, MD authorizes themselves. Left sig: Lead Sig, Right sig: Lead Sig + Stamp
+    stamper = make_indiv_poa_stamper("lead_stamp.png", "lead_signature.png", "lead_signature.png")
+    create_poa_with_declaration_pdf(bid_number, contract_name, bid_date, employer_name, employer_address, md_name, org_name, org_address, md_name, org_name, org_address, letterhead_file, output_name, stamper)
 
-
-def create_partner_poa_pdf(*args):
-    create_poa_with_declaration_pdf(*args)
+def create_partner_poa_pdf(bid_number, contract_name, bid_date, employer_name, employer_address, md_name, org_name, org_address, letterhead_file, output_name):
+    # For partner, MD authorizes themselves. Left sig: Partner Sig, Right sig: Partner Sig + Stamp
+    stamper = make_indiv_poa_stamper("partner_stamp.png", "partner_signature.png", "partner_signature.png")
+    create_poa_with_declaration_pdf(bid_number, contract_name, bid_date, employer_name, employer_address, md_name, org_name, org_address, md_name, org_name, org_address, letterhead_file, output_name, stamper)
 
 def add_mobilization_schedule_stamps(canvas, doc):
     canvas.saveState()
     try:
-        img1 = ImageReader("lead_stamp.png")
-        canvas.drawImage(img1, 
-                        x=6*inch, 
-                        y=6*inch, 
-                        width=1.5*inch, 
-                        height=0.75*inch, 
-                        mask='auto',
-                        preserveAspectRatio=True)
+        img1 = ImageReader(os.path.join(INPUT_DIR, "lead_stamp.png"))
+        canvas.drawImage(img1, x=4.8*inch, y=5.5*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
         
-        img2 = ImageReader("bidder_signature.png")
-        canvas.drawImage(img2,
-                        x=4.5*inch,
-                        y=6*inch,
-                        width=1.5*inch,
-                        height=0.75*inch,
-                        mask='auto',
-                        preserveAspectRatio=True)
+        img2 = ImageReader(os.path.join(INPUT_DIR, "bidder_signature.png"))
+        canvas.drawImage(img2, x=3.8*inch, y=5.5*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
       
-        img4 = ImageReader("partner_stamp.png")
-        canvas.drawImage(img4,
-                        x=5.2*inch,
-                        y=6.1*inch,
-                        width=1.5*inch,
-                        height=0.75*inch,
-                        mask='auto',
-                        preserveAspectRatio=True)
+        img4 = ImageReader(os.path.join(INPUT_DIR, "partner_stamp.png"))
+        canvas.drawImage(img4, x=6.0*inch, y=5.5*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
         
     except Exception as e:
-        # Fallback text if images not found
-        canvas.setFont("Helvetica-Bold", 10)
-        canvas.setFillColorRGB(1, 0, 0)
-        
-        print(f"Warning: Could not load stamp images - using text placeholders. Error: {e}")
+        pass
     finally:
         canvas.restoreState()
         
 def add_technical_purposal_stamps(canvas, doc):
     canvas.saveState()
     try:
-        img1 = ImageReader("lead_stamp.png")
-        canvas.drawImage(img1, 
-                        x=6*inch, 
-                        y=0.5*inch, 
-                        width=1.5*inch, 
-                        height=0.75*inch, 
-                        mask='auto',
-                        preserveAspectRatio=True)
+        img1 = ImageReader(os.path.join(INPUT_DIR, "lead_stamp.png"))
+        canvas.drawImage(img1, x=4.8*inch, y=0.5*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
         
-        img2 = ImageReader("bidder_signature.png")
-        canvas.drawImage(img2,
-                        x=4.5*inch,
-                        y=0.5*inch,
-                        width=1.5*inch,
-                        height=0.75*inch,
-                        mask='auto',
-                        preserveAspectRatio=True)
+        img2 = ImageReader(os.path.join(INPUT_DIR, "bidder_signature.png"))
+        canvas.drawImage(img2, x=3.8*inch, y=0.5*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
       
-        img4 = ImageReader("partner_stamp.png")
-        canvas.drawImage(img4,
-                        x=5.2*inch,
-                        y=0.6*inch,
-                        width=1.5*inch,
-                        height=0.75*inch,
-                        mask='auto',
-                        preserveAspectRatio=True)
+        img4 = ImageReader(os.path.join(INPUT_DIR, "partner_stamp.png"))
+        canvas.drawImage(img4, x=6.0*inch, y=0.6*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
         
     except Exception as e:
-        # Fallback text if images not found
-        canvas.setFont("Helvetica-Bold", 10)
-        canvas.setFillColorRGB(1, 0, 0)
-        
-        print(f"Warning: Could not load stamp images - using text placeholders. Error: {e}")
+        pass
     finally:
         canvas.restoreState()
         
 def add_jv_agreement_stamps(canvas, doc):
     canvas.saveState()
     try:
-        img1 = ImageReader("lead_stamp.png")
-        canvas.drawImage(img1, 
-                        x=0.4*inch, 
-                        y=3*inch, 
-                        width=1.5*inch, 
-                        height=0.75*inch, 
-                        mask='auto',
-                        preserveAspectRatio=True)
-    
-        img2 = ImageReader("lead_signature.png")
-        canvas.drawImage(img2,
-                        x=1.1*inch,
-                        y=3*inch,
-                        width=1.5*inch,
-                        height=0.75*inch,
-                        mask='auto',
-                        preserveAspectRatio=True)
+        # Lead
+        img1 = ImageReader(os.path.join(INPUT_DIR, "lead_stamp.png"))
+        canvas.drawImage(img1, x=1.0*inch, y=2.7*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
+        img2 = ImageReader(os.path.join(INPUT_DIR, "lead_signature.png"))
+        canvas.drawImage(img2, x=2.0*inch, y=2.7*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
         
-        img3 = ImageReader("partner_stamp.png")
-        canvas.drawImage(img3,
-                        x=4.4*inch,
-                        y=3*inch,
-                        width=1.5*inch,
-                        height=0.75*inch,
-                        mask='auto',
-                        preserveAspectRatio=True)
-        
-        img4 = ImageReader("partner_signature.png")
-        canvas.drawImage(img4,
-                        x=5.4*inch,
-                        y=3.1*inch,
-                        width=1.5*inch,
-                        height=0.75*inch,
-                        mask='auto',
-                        preserveAspectRatio=True)
+        # Partner
+        img3 = ImageReader(os.path.join(INPUT_DIR, "partner_stamp.png"))
+        canvas.drawImage(img3, x=4.5*inch, y=2.7*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
+        img4 = ImageReader(os.path.join(INPUT_DIR, "partner_signature.png"))
+        canvas.drawImage(img4, x=5.5*inch, y=2.8*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
         
     except Exception as e:
-        canvas.setFont("Helvetica-Bold", 10)
-        canvas.setFillColorRGB(1, 0, 0)
-        
-        print(f"Warning: Could not load stamp images - using text placeholders. Error: {e}")
+        pass
     finally:
         canvas.restoreState()
-        
         
 def add_poa_stamps(canvas, doc):
     canvas.saveState()
     try:
-        img1 = ImageReader("lead_stamp.png")
-        canvas.drawImage(img1, 
-                        x=0.4*inch, 
-                        y=4.2*inch, 
-                        width=1.5*inch, 
-                        height=0.75*inch, 
-                        mask='auto',
-                        preserveAspectRatio=True)
-    
-        img2 = ImageReader("lead_signature.png")
-        canvas.drawImage(img2,
-                        x=1.1*inch,
-                        y=4.2*inch,
-                        width=1.5*inch,
-                        height=0.75*inch,
-                        mask='auto',
-                        preserveAspectRatio=True)
+        # Lead
+        img1 = ImageReader(os.path.join(INPUT_DIR, "lead_stamp.png"))
+        canvas.drawImage(img1, x=1.0*inch, y=3.6*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
+        img2 = ImageReader(os.path.join(INPUT_DIR, "lead_signature.png"))
+        canvas.drawImage(img2, x=2.0*inch, y=3.6*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
         
-        img3 = ImageReader("partner_stamp.png")
-        canvas.drawImage(img3,
-                        x=4.4*inch,
-                        y=4.2*inch,
-                        width=1.5*inch,
-                        height=0.75*inch,
-                        mask='auto',
-                        preserveAspectRatio=True)
-        
-        img4 = ImageReader("partner_signature.png")
-        canvas.drawImage(img4,
-                        x=5.4*inch,
-                        y=4.3*inch,
-                        width=1.5*inch,
-                        height=0.75*inch,
-                        mask='auto',
-                        preserveAspectRatio=True)
-        
-        img5 = ImageReader("bidder_signature.png")
-        canvas.drawImage(img5,
-                        x=0.5*inch,
-                        y=5.5*inch,
-                        width=1.5*inch,
-                        height=0.75*inch,
-                        mask='auto',
-                        preserveAspectRatio=True)    
+        # Partner
+        img3 = ImageReader(os.path.join(INPUT_DIR, "partner_stamp.png"))
+        canvas.drawImage(img3, x=4.5*inch, y=3.6*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
+        img4 = ImageReader(os.path.join(INPUT_DIR, "partner_signature.png"))
+        canvas.drawImage(img4, x=5.5*inch, y=3.65*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
+
+        # Bidder
+        img5 = ImageReader(os.path.join(INPUT_DIR, "bidder_signature.png"))
+        canvas.drawImage(img5, x=0.5*inch, y=5.15*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)    
     except Exception as e:
-        # Fallback text if images not found
-        canvas.setFont("Helvetica-Bold", 10)
-        canvas.setFillColorRGB(1, 0, 0)
-        
-        print(f"Warning: Could not load stamp images - using text placeholders. Error: {e}")
+        pass
     finally:
         canvas.restoreState()
         
 def add_bid_letter_stamp(canvas, doc):
     canvas.saveState()
     try:
-        img1 = ImageReader("lead_stamp.png")
-        canvas.drawImage(img1, 
-                        x=1.3*inch, 
-                        y=1.5*inch, 
-                        width=1.5*inch, 
-                        height=0.75*inch, 
-                        mask='auto',
-                        preserveAspectRatio=True)
+        img1 = ImageReader(os.path.join(INPUT_DIR, "lead_stamp.png"))
+        canvas.drawImage(img1, x=1.65*inch, y=1.1*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
         
-        img2 = ImageReader("bidder_signature.png")
-        canvas.drawImage(img2,
-                        x=0.5*inch,
-                        y=1.5*inch,
-                        width=1.5*inch,
-                        height=0.75*inch,
-                        mask='auto',
-                        preserveAspectRatio=True)
+        img2 = ImageReader(os.path.join(INPUT_DIR, "bidder_signature.png"))
+        canvas.drawImage(img2, x=0.6*inch, y=1.1*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
       
-        img4 = ImageReader("partner_stamp.png")
-        canvas.drawImage(img4,
-                        x=2.1*inch,
-                        y=1.5*inch,
-                        width=1.5*inch,
-                        height=0.75*inch,
-                        mask='auto',
-                        preserveAspectRatio=True)
+        img4 = ImageReader(os.path.join(INPUT_DIR, "partner_stamp.png"))
+        canvas.drawImage(img4, x=3.0*inch, y=1.1*inch, width=1.25*inch, height=1.25*inch, mask='auto', preserveAspectRatio=True)
         
     except Exception as e:
-        # Fallback text if images not found
-        canvas.setFont("Helvetica-Bold", 10)
-        canvas.setFillColorRGB(1, 0, 0)
-        
-        print(f"Warning: Could not load stamp images - using text placeholders. Error: {e}")
+        pass
     finally:
         canvas.restoreState()
        
@@ -524,22 +437,18 @@ def build_letterhead(doc_width, jv_name, jv_address, email_address):
     return table
 
 def add_paragraphs(elements, texts, style, spacing=8):
-    """Helper to add multiple paragraphs with consistent spacing."""
     for text in texts:
         elements.append(Paragraph(text, style))
         elements.append(Spacer(1, spacing))
 
 def validate_share(lead_share, partner_share):
-    """Ensure the shares sum to 100%."""
     total = lead_share + partner_share
     if total != 100:
         raise ValueError(f"Shares must sum to 100% (current total: {total}%)")
         
-        
-        
 def create_mobilization_schedule_pdf(bid_number, contract_name, jv_name, jv_address, email_address):
     safe_bid_number = bid_number.replace("/", "-")
-    filename = f"Mobilization_Schedule_{safe_bid_number}.pdf"
+    filename = os.path.join(OUTPUT_DIR, f"Mobilization_Schedule_{safe_bid_number}.pdf")
     
     try:
         doc = SimpleDocTemplate(filename, pagesize=A4,
@@ -555,7 +464,6 @@ def create_mobilization_schedule_pdf(bid_number, contract_name, jv_name, jv_addr
         elements.append(Paragraph("MOBILIZATION SCHEDULE", title_center_large))
         elements.append(Spacer(1, 10))
                 
-        # Table data
         table_data = [
             ["", "", "1st week", "2nd week", "3rd week", "4th week"],
             ["S.N.", "Description of Work", "", "", "", ""],
@@ -566,7 +474,6 @@ def create_mobilization_schedule_pdf(bid_number, contract_name, jv_name, jv_addr
             ["5", "Mobilization of tools and equipment/material", "", "", "", ""]
         ]
         
-        # Table style
         table_style = TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
             ('BACKGROUND', (2, 2), (5, 2), colors.black),    
@@ -579,13 +486,9 @@ def create_mobilization_schedule_pdf(bid_number, contract_name, jv_name, jv_addr
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ])
         
-        # Create table with adjusted column widths
         table = Table(table_data, colWidths=[0.4*inch, 4.1*inch, 0.7*inch, 0.7*inch, 0.7*inch, 0.7*inch])
         table.setStyle(table_style)
-        
-        # Add table to elements
         elements.append(table)
-        
         elements.append(PageBreak())
         
         elements.append(build_letterhead(doc.width, jv_name, jv_address, email_address))
@@ -600,7 +503,7 @@ def create_mobilization_schedule_pdf(bid_number, contract_name, jv_name, jv_addr
               "After award and signing of contract, a detailed work, program/schedule will be submitted with performance guarantee. A technical team and pre-required construction tool/equipment will be deputed / mobilized at site. Drawings shall be read carefully and quantities of required construction materials will be worked out. A site office and a labor camp will be established within the construction site premises. A supervisor for labor management will be deputed at site. General requirements as per contract shall be fulfilled. During this period the site shall be prepared ready for immediate start of construction work.",
               "<b><u><i>Material Construction and transportation</i></u></b>",
               "Surveying, Designing if required execution of fields works, management of works preparation of bills, quality control, planning, scheduling and Progress review to asset requirements of construction materials equipment’s etc.",
-              "<b><u><i>Material Construction and transportation</i></u></b>",
+              "<b><u><i>Storage and Handling of Materials</i></u></b>",
               "The construction material will be transported from its source and dumped at site at a secure location selected a storage area built within the vicinity of construction site. During the time of mass construction work, materials will be dumped at site in sufficient quantity, and materials will be continually supplied as per requirement of the work. Sensitive materials like cement and other shall be stored in secure place at site. Transportation of construction materials shall go thoroughly during construction period.",
               "<b><u><i>Equipment and Labor force management work</i></u></b>",
               "Sufficient numbers of equipment will be brought as site and made stand by for connected work. Sufficient numbers of work force like skilled and unskilled labor will be hired. Not all labors will be hired at a time. As per the requirement of the work, labor numbers can be increased or decreased.",
@@ -615,15 +518,12 @@ def create_mobilization_schedule_pdf(bid_number, contract_name, jv_name, jv_addr
                          ]
         add_paragraphs(elements, body_texts, body_style)
         
-        # Build document
         doc.build(elements, onFirstPage=add_mobilization_schedule_stamps, onLaterPages=add_technical_purposal_stamps)
-        print(f"✅ Mobilization Schedule PDF created: {filename}")
+        print(f"✅ Mobilization Schedule PDF created: {os.path.basename(filename)}")
     except Exception as e:
         print(f"❌ Failed to create Mobilization Schedule PDF: {e}")
         
-        
 def create_work_methodology_pdf(bid_number, contract_name, bid_date, jv_name, jv_address, email_address, employer_name, employer_address):
-    
     body_style = ParagraphStyle(
         name='Body',
         parent=styles['Normal'],
@@ -642,10 +542,9 @@ def create_work_methodology_pdf(bid_number, contract_name, bid_date, jv_name, jv
         alignment=TA_CENTER,
         spaceAfter=8,
     )
-
     
     safe_bid_number = bid_number.replace("/", "-")
-    filename = f"Work_methodology_{safe_bid_number}.pdf"
+    filename = os.path.join(OUTPUT_DIR, f"Work_methodology_{safe_bid_number}.pdf")
     
     try:
         doc = SimpleDocTemplate(filename, pagesize=A4, rightMargin=40, leftMargin=40, topMargin=50, bottomMargin=40)
@@ -726,16 +625,13 @@ def create_work_methodology_pdf(bid_number, contract_name, bid_date, jv_name, jv
         elements.append(PageBreak())
 
         doc.build(elements, onFirstPage=add_technical_purposal_stamps, onLaterPages=add_technical_purposal_stamps)
-        print(f"✅ Work Methodology PDF created: {filename}")
+        print(f"✅ Work Methodology PDF created: {os.path.basename(filename)}")
     except Exception as e:
         print(f"❌ Failed to create Work Methodology PDF: {e}")
 
-
-
-# --- PDF Generation Functions ---
 def create_technical_bid_pdf(bid_number, contract_name, bid_date, bidder_name, jv_name, jv_address, email_address, employer_name, employer_address):
     safe_bid_number = bid_number.replace("/", "-")
-    filename = f"Letter_of_Technical_Bid_{safe_bid_number}.pdf"
+    filename = os.path.join(OUTPUT_DIR, f"Letter_of_Technical_Bid_{safe_bid_number}.pdf")
     
     try:
         doc = SimpleDocTemplate(filename, pagesize=A4, rightMargin=40, leftMargin=40, topMargin=50, bottomMargin=40)
@@ -764,18 +660,18 @@ def create_technical_bid_pdf(bid_number, contract_name, bid_date, bidder_name, j
             "j) We agree to permit the Employer/DP or its representative to inspect our accounts and records and other documents relating to the bid submission and to have them audited by author appointed by the Employer.",
             "k) If our Bid is accepted we commit to mobilizing key equipment and personnel in accordance with the requirements set forth in section III (Evaluation and Qualification Criteria) and our technical proposal, or as otherwise agreed with the employer.",
             "l) We declare that we have not running contracts more than five (5) in accordance with ITB 4.9",
-            f"Name: <b>{bidder_name}</b><br/>In the Capacity of Attorney Person<br/><br/><br/><br/><br/><br/><br/>Signed...<br/>Duly authorized to sign the Bid for and on behalf of <b>{jv_name}</b><br/>Date: <b>{bid_date}</b>"
+            f"Name: <b>{bidder_name}</b><br/>In the Capacity of Attorney Person<br/><br/><br/><br/><br/><br/><br/><br/>Signed...<br/>Duly authorized to sign the Bid for and on behalf of <b>{jv_name}</b><br/>Date: <b>{bid_date}</b>"
         ]
         add_paragraphs(elements, body_texts, body_style)
 
         doc.build(elements, onFirstPage=add_bid_letter_stamp)
-        print(f"✅ Technical Bid PDF created: {filename}")
+        print(f"✅ Technical Bid PDF created: {os.path.basename(filename)}")
     except Exception as e:
         print(f"❌ Failed to create Technical Bid PDF: {e}")
 
 def create_price_bid_pdf(bid_number, contract_name, bid_date, bidder_name, jv_name, jv_address, email_address, employer_name, employer_address):
     safe_bid_number = bid_number.replace("/", "-")
-    filename = f"Letter_of_Price_Bid_{safe_bid_number}.pdf"
+    filename = os.path.join(OUTPUT_DIR, f"Letter_of_Price_Bid_{safe_bid_number}.pdf")
     
     try:
         doc = SimpleDocTemplate(filename, pagesize=A4, rightMargin=40, leftMargin=40, topMargin=50, bottomMargin=40)
@@ -816,25 +712,21 @@ def create_price_bid_pdf(bid_number, contract_name, bid_date, bidder_name, jv_na
             "i) We understand that you are not bound to accept the lowest evaluated bid or any other bid that you may receive and",
             "j) We declare that we are solely responsible for the authenticity of the documents submitted by us.",
             "k) We agree to permit the Employer/DP or its representative to inspect our accounts and records and other documents relating to the bid submission and to have them audited by author appointed by the Employer.",
-            f"Name: <b>{bidder_name}</b><br/>In the Capacity of Attorney Person<br/><br/><br/><br/><br/><br/><br/><br/>Signed...<br/>Duly authorized to sign the Bid for and on behalf of <b>{jv_name}</b><br/>Date: <b>{bid_date}</b>"
+            f"Name: <b>{bidder_name}</b><br/>In the Capacity of Attorney Person<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>Signed...<br/>Duly authorized to sign the Bid for and on behalf of <b>{jv_name}</b><br/>Date: <b>{bid_date}</b>"
         ]
         add_paragraphs(elements, footer_texts, body_style)
 
         doc.build(elements, onFirstPage=add_bid_letter_stamp)
-        print(f"✅ Price Bid PDF created: {filename}")
+        print(f"✅ Price Bid PDF created: {os.path.basename(filename)}")
     except Exception as e:
         print(f"❌ Failed to create Price Bid PDF: {e}")
 
-def create_jv_agreement_pdf(bid_number, contract_name, bid_date, employer_name, employer_address,
-                          lead_org, partner_org, lead_short, partner_short, lead_address, partner_address,
-                          email_address, md1, md2, lead_share, partner_share, bidder_name):
+def create_jv_agreement_pdf(bid_number, contract_name, bid_date, employer_name, employer_address, lead_org, partner_org, bid_org, lead_short, partner_short, lead_address, partner_address, email_address, md1, md2, lead_share, partner_share, bidder_name,jv_address):
     safe_bid_number = bid_number.replace("/", "-")
-    filename = f"JV_Agreement_and_POA_{safe_bid_number}.pdf"
+    filename = os.path.join(OUTPUT_DIR, f"JV_Agreement_and_POA_{safe_bid_number}.pdf")
     
     try:
-        validate_share(lead_share, partner_share)  # Validate share totals
         jv_name = f"{lead_short}-{partner_short} J.V."
-        jv_address = lead_address
 
         doc = SimpleDocTemplate(filename, pagesize=A4, rightMargin=40, leftMargin=40, topMargin=50, bottomMargin=40)
         elements = []
@@ -849,54 +741,63 @@ def create_jv_agreement_pdf(bid_number, contract_name, bid_date, employer_name, 
             f"M/S <b>{partner_org}</b> shortly known as <b>{partner_short}</b> a Company registered in the government of Nepal with with department of industries having its registered office {partner_address} referred as Second Partner.",
             f"Whereas <b>{employer_name},{employer_address}</b>. Invite the Bid for the <b>{contract_name}</b>, IFB No.: <b>{bid_number}</b>. Experienced civil Contractors having experiences in Civil Construction field and are desirous and have agreed to apply jointly qualification, bidding, construction, execution and maintenance of the above mentioned work.",
             "All parties agree it upon follows:",
-            f"The name of Joint Venture will be <b>{jv_name.upper()}</b>",
+            f"1. The name of Joint Venture will be <b>{jv_name.upper()}</b>",
             f"2. The address of Joint Venture will be <b>{jv_address}</b>",
             f"3. The Lead Partner of this Joint venture is <b>{lead_org}</b>",
             "4. All the partners of the joint venture shall be jointly and severally liable for the execution of the contract. All the parties have agreed that a board consisting of representative from each party will be formed which will be responsible for overall management to the job order to fulfill all contractual obligations to complete the job within the stipulated period.",
-            f"5. All the parties have agreed that the contribution of each party for this contract will be as below & the return from this contract and the loss will also be shared as per each party's contribution.<br></br><b>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp (a) {lead_org}&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp - {lead_share}% of total works,<br></br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp (b) {partner_org}&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp - {partner_share}% of total works</b>",
+            f"5. All the parties have agreed that the contribution of each party for this contract will be as below & the return from this contract and the loss will also be shared as per each party's contribution.",
+        ]
+        add_paragraphs(elements, agreement_texts, justify_style, spacing=10)
+        org_table = [[
+            Paragraph(f"<b>(a) {lead_org}<br/>(b) {partner_org}</b>", justify_style),
+            Paragraph(f"<b>- {lead_share}% of total works<br/>- {partner_share}% of total works</b>", justify_style),
+        ]]
+        elements.append(Table(org_table, colWidths=[3.4 * inch, 3.4 * inch]))
+        elements.append(Spacer(1, 12))
+
+        agreement_texts = [        
             "6. All the expenses involved in execution of contract shall be borne by each party in proportion to their participation ratio as explained on clause No. 5.",
             "7. Matters not stipulated in this agreement shall be decided between the parties mutually from time to time. Matters provided under this agreement or any of its terms and conditions may be amended.",
             f"8. All the companies agreed on the Terms and Condition Mentioned above and signed the agreement today on <b>{bid_date}</b>.",
-            f"This agreement empowers Mr <b>{md1}, MD of {lead_org}</b> to sign all the Documents submits bids, receive instruction, negotiable and deal with employer on behalf of the Joint Venture."
+            f"This agreement empowers Mr. <b>{bidder_name}, MD of {bid_org}</b> to sign all the Documents submits bids, receive instruction, negotiable and deal with employer on behalf of the Joint Venture."
             "Seal and Signature.<br/><br/<br/><br/><br/><br/><br/><br/><br/><br/>"
         ]
         add_paragraphs(elements, agreement_texts, justify_style, spacing=10)
 
         sigs = [[
             Paragraph(f"<b>{md1}</b><br/>MD<br/>{lead_org}", justify_style),
-            Paragraph(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>{md2}</b><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MD<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{partner_org}", justify_style)
+            Paragraph(f"<b>{md2}</b><br/>MD<br/>{partner_org}", justify_style),
         ]]
         elements.append(Table(sigs, colWidths=[3.5 * inch, 3.5 * inch]))
         elements.append(Spacer(1, 12))
         elements.append(PageBreak())
 
-        # --- Power of Attorney ---
+
         elements.append(build_letterhead(doc.width, jv_name, jv_address, email_address))
         elements.append(Spacer(1, 12))
         elements.append(Paragraph(f"Date: {bid_date}", date_style))
         elements.append(Paragraph( f"<b>To,<br/>{employer_name},<br/>{employer_address}.</b>", justify_style))
-        elements.append(Paragraph(f"<b><u>Subject: Power of Attorney</u></b>", title_center_large))
+        elements.append(Paragraph(f"<b><u>Subject: Power of Attorney</u></b>", section_title_big))
 
         poa_texts = [
             f"For: <b>{contract_name}</b> and Invitation for Bids No.: <b>{bid_number}</b>",
             f"Dear sir,<br/>Known all men by these presents that we the undersigned, All Authorized JV Partners lawfully authorized to represent and act on behalf of the said form under the company Act do hereby authorized <b>{bidder_name}, authorized representative of JV</b> whose specimen signature appears as given below to run all business activities signing joint venture/preparation/signing/providing/Qualification and bid, withdrawal and modification of bid, negotiable with the Employer, execute the contract and conduct all necessary dents/ agreements with all project, run all banking activities, to authorize any other person to represent on behalf of his authorization within Nepal and abroad for Contract mentioned above.",
             f"This undersigned shall acknowledge the Legal effects of the signature of the said attorney holder after the signing and sealing of power of attorney.",
-            f"Specimen Signature of:<br/><br/><br/><br/><br/><br/><br/><b>(Mr. {bidder_name})</b><br/>Authorized Representative<br/>Seal and Signature:<br/><br/><br/><br/><br/><br/>"
+            f"Specimen Signature of:<br/><br/><br/><br/><br/><br/><br/><b>(Mr. {bidder_name})</b><br/>Authorized Representative<br/>Seal and Signature:<br/><br/><br/><br/><br/><br/><br/><br/><br/>"
         ]
         add_paragraphs(elements, poa_texts, justify_style, spacing=12)
         elements.append(Table(sigs, colWidths=[3.5 * inch, 3.5 * inch]))
 
         doc.build(elements, onFirstPage=add_jv_agreement_stamps, onLaterPages=add_poa_stamps)
-        print(f"✅ JV Agreement & POA PDF created: {filename}")
+        print(f"✅ JV Agreement & POA PDF created: {os.path.basename(filename)}")
     except ValueError as e:
         print(f"❌ Validation Error: {e}")
     except Exception as e:
         print(f"❌ Failed to create JV Agreement PDF: {e}")
 
-# --- Organizational Chart Function ---
 def create_org_chart_pdf(bid_number, contract_name, bid_date, jv_name, jv_address, email_address):
     safe_bid_number = bid_number.replace("/", "-")
-    filename = f"Organizational_Chart_{safe_bid_number}.pdf"
+    filename = os.path.join(OUTPUT_DIR, f"Organizational_Chart_{safe_bid_number}.pdf")
     
     try:
         doc = SimpleDocTemplate(filename, pagesize=landscape(A4),
@@ -905,11 +806,9 @@ def create_org_chart_pdf(bid_number, contract_name, bid_date, jv_name, jv_addres
         elements = []
         styles = getSampleStyleSheet()
 
-        # Add letterhead
         elements.append(build_letterhead(doc.width, jv_name, jv_address, email_address))
         elements.append(Spacer(1, 2))
         
-        # Title style for organizational chart
         org_title_style = ParagraphStyle(
             'OrgTitleStyle',
             parent=styles['Heading1'],
@@ -920,29 +819,8 @@ def create_org_chart_pdf(bid_number, contract_name, bid_date, jv_name, jv_addres
             textColor=colors.darkblue
         )
         
-        contract_style = ParagraphStyle(
-            'ContractStyle',
-            parent=styles['Normal'],
-            fontName='Helvetica',
-            fontSize=9,
-            alignment=TA_CENTER,
-            spaceAfter=8
-        )
-        
-        # Add contract information
         elements.append(Paragraph("SITE ORGANIZATIONAL CHART", org_title_style))
         elements.append(Spacer(1, 2))
-
-        # Box style for org chart elements
-        box_style = ParagraphStyle(
-            'BoxStyle',
-            parent=styles['Normal'],
-            fontName='Helvetica-Bold',
-            fontSize=6,
-            alignment=TA_CENTER,
-            leading=7,
-            textColor=colors.black
-        )
         
         d = Drawing(11.7*inch, 6*inch)
 
@@ -970,11 +848,9 @@ def create_org_chart_pdf(bid_number, contract_name, bid_date, jv_name, jv_addres
                          y2 - arrow_size * math.sin(angle + math.pi / 6),
                          strokeColor=colors.black, strokeWidth=0.7))
 
-        # Level 1: Managing Director
         md_x, md_y = 5.5*inch, 5.5*inch
         add_box(d, md_x, md_y, main_box_w, main_box_h, "Managing Director", colors.lightgrey)
 
-        # Level 2: Directors
         dir_positions = [
             (3.0*inch, 4.5*inch),
             (5.5*inch, 4.5*inch),
@@ -985,14 +861,12 @@ def create_org_chart_pdf(bid_number, contract_name, bid_date, jv_name, jv_addres
             add_box(d, x, y, main_box_w, main_box_h, "Director", colors.whitesmoke)
             add_arrow(d, md_x + main_box_w/2, md_y, x + main_box_w/2, y + main_box_h)
 
-        # Level 3: Project Manager
         pm_x, pm_y = 5.5*inch, 3.5*inch
         add_box(d, pm_x, pm_y, main_box_w, main_box_h, "Project/Construction Manager", colors.lightgrey)
 
         for x, y in dir_positions:
             add_arrow(d, x + main_box_w/2, y, pm_x + main_box_w/2, pm_y + main_box_h)
 
-        # Level 4: Sections
         tech_x, tech_y = 0.5*inch, 2.5*inch
         account_x, account_y = 7.0*inch, 2.5*inch
         admin_x, admin_y = 9.0*inch, 2.5*inch
@@ -1005,7 +879,6 @@ def create_org_chart_pdf(bid_number, contract_name, bid_date, jv_name, jv_addres
         add_arrow(d, pm_x + main_box_w/4, pm_y, tech_x + main_box_w/2, tech_y + main_box_h)
         add_arrow(d, pm_x + 3*main_box_w/4, pm_y, admin_x + main_box_w/2, admin_y + main_box_h)
 
-        # Level 5: Technical Section Engineers
         tech_engineers = [
             (0.2*inch, 1.8*inch, "Civil Engineer"),
             (1.8*inch, 1.8*inch, "Electrical Engineer"),
@@ -1017,27 +890,22 @@ def create_org_chart_pdf(bid_number, contract_name, bid_date, jv_name, jv_addres
             add_box(d, x, y, small_box_w, small_box_h, title, colors.whitesmoke)
             add_arrow(d, tech_x + main_box_w/2, tech_y, x + small_box_w/2, y + small_box_h)
 
-        # Site Supervisor (under Civil Eng.)
         site_supervisor_x, site_supervisor_y = 0.2*inch, 1.3*inch
         add_box(d, site_supervisor_x, site_supervisor_y, tiny_box_w, tiny_box_h, "Site Supervisor", colors.whitesmoke)
         add_arrow(d, 0.2*inch + small_box_w/2, 1.8*inch, site_supervisor_x + tiny_box_w/2, site_supervisor_y + tiny_box_h)
 
-        # Skilled & Unskilled Labors side-by-side under Site Supervisor
         skilled_x, skilled_y = 0.0*inch, 0.8*inch
-        unskilled_x, unskilled_y = 1.2*inch, 0.8*inch  # shifted right by 1 inch
+        unskilled_x, unskilled_y = 1.2*inch, 0.8*inch 
 
         add_box(d, skilled_x, skilled_y, tiny_box_w, tiny_box_h, "Skilled Labors", colors.whitesmoke)
         add_box(d, unskilled_x, unskilled_y, tiny_box_w, tiny_box_h, "Unskilled Labors", colors.whitesmoke)
 
-        # Arrows from Site Supervisor to both boxes
         add_arrow(d, site_supervisor_x + tiny_box_w/2, site_supervisor_y, skilled_x + tiny_box_w/2, skilled_y + tiny_box_h)
         add_arrow(d, site_supervisor_x + tiny_box_w/2, site_supervisor_y, unskilled_x + tiny_box_w/2, unskilled_y + tiny_box_h)
 
-        # Auto CAD (independent, under Technical Section)
         add_box(d, 1.8*inch, 1.3*inch, tiny_box_w, tiny_box_h, "Auto CAD", colors.whitesmoke)
         add_arrow(d, 1.8*inch + small_box_w/2, 1.8*inch, 1.8*inch + tiny_box_w/2, 1.3*inch + tiny_box_h)
 
-        # Account Section Positions
         account_positions = [
             (6.3*inch, 1.8*inch, "Account Officer"),
             (7.7*inch, 1.8*inch, "Procurement Officer")
@@ -1047,7 +915,6 @@ def create_org_chart_pdf(bid_number, contract_name, bid_date, jv_name, jv_addres
             add_box(d, x, y, small_box_w, small_box_h, title, colors.whitesmoke)
             add_arrow(d, account_x + main_box_w/2, account_y, x + small_box_w/2, y + small_box_h)
 
-        # Administrative Section Positions
         admin_positions = [
             (9.2*inch, 1.8*inch, "Admin Officer"),
             (9.2*inch, 1.3*inch, "Store Keeper"),
@@ -1067,62 +934,60 @@ def create_org_chart_pdf(bid_number, contract_name, bid_date, jv_name, jv_addres
 
         elements.append(d)
         doc.build(elements, onFirstPage=add_technical_purposal_stamps)
-        print(f"✅ Organizational chart created: {filename}")
+        print(f"✅ Organizational chart created: {os.path.basename(filename)}")
     except Exception as e:
         print(f"❌ Failed to create Organizational Chart PDF: {e}")
 
 # --- Main Function ---
 def main():
-    print("\n📝 PDF Generator for Technical Bid, Price Bid, JV Agreement, and Organizational Chart\n")
+    print(f"\n📁 Checking directories...")
+    print(f"   -> Please place your images/letterheads in: {os.path.abspath(INPUT_DIR)}")
+    print(f"   -> Generated PDFs will be saved to: {os.path.abspath(OUTPUT_DIR)}\n")
     
-    # Input Collection with Defaults
+    print("📝 PDF Generator for Technical Bid, Price Bid, JV Agreement, POA, and Organizational Chart\n")
+    
     bid_number = input(f"Enter Invitation for Bid No. [{DEFAULT_BID_NUMBER}]: ") or DEFAULT_BID_NUMBER
     contract_name = input(f"Enter Name of the Contract [{DEFAULT_CONTRACT_NAME}]: ") or DEFAULT_CONTRACT_NAME
     bid_date = input(f"Enter Date (e.g. July 17, 2025) [{DEFAULT_DATE}]: ") or DEFAULT_DATE
     bidder_name = input(f"Enter Bidder's Full Name [{DEFAULT_BIDDER_NAME}]: ") or DEFAULT_BIDDER_NAME
     employer_name = input(f"Enter Employer Name [{DEFAULT_EMPLOYER_NAME}]: ") or DEFAULT_EMPLOYER_NAME
     employer_address = input(f"Enter Employer Address [{DEFAULT_EMPLOYER_ADDRESS}]: ") or DEFAULT_EMPLOYER_ADDRESS
-
     lead_org = input(f"Enter Lead Organization Name [{DEFAULT_LEAD_ORG}]: ") or DEFAULT_LEAD_ORG
     partner_org = input(f"Enter Partner Organization Name [{DEFAULT_PARTNER_ORG}]: ") or DEFAULT_PARTNER_ORG
-    lead_short = input(f"Short name for Lead Org (e.g., Eco) [{DEFAULT_LEAD_SHORT}]: ") or DEFAULT_LEAD_SHORT
-    partner_short = input(f"Short name for Partner Org (e.g., Reshiva) [{DEFAULT_PARTNER_SHORT}]: ") or DEFAULT_PARTNER_SHORT
+    bid_org = input(f"Enter Bid Organization Name [{DEFAULT_BID_ORG}]: ") or DEFAULT_BID_ORG
+    lead_short = input(f"Short name for Lead Org [{DEFAULT_LEAD_SHORT}]: ") or DEFAULT_LEAD_SHORT
+    partner_short = input(f"Short name for Partner Org [{DEFAULT_PARTNER_SHORT}]: ") or DEFAULT_PARTNER_SHORT
     lead_address = input(f"Enter Lead Organization Address [{DEFAULT_LEAD_ADDRESS}]: ") or DEFAULT_LEAD_ADDRESS
     partner_address = input(f"Enter Partner Organization Address [{DEFAULT_PARTNER_ADDRESS}]: ") or DEFAULT_PARTNER_ADDRESS
     email_address = input(f"Enter JV Email Address [{DEFAULT_EMAIL}]: ") or DEFAULT_EMAIL
     md1 = input(f"Name of MD from Lead Org [{DEFAULT_MD_LEAD}]: ") or DEFAULT_MD_LEAD
     md2 = input(f"Name of MD from Partner Org [{DEFAULT_MD_PARTNER}]: ") or DEFAULT_MD_PARTNER
-
-    # Share Input with Validation Loop
+    jv_address = input(f"Enter JV Address [{DEFAULT_JV_ADDRESS}]: ") or DEFAULT_JV_ADDRESS
+    
     while True:
         try:
-            lead_share = int(input(f"Lead Org Share % (e.g., 51) [{DEFAULT_LEAD_SHARE}]: ") or DEFAULT_LEAD_SHARE)
-            partner_share = int(input(f"Partner Org Share % (e.g., 49) [{DEFAULT_PARTNER_SHARE}]: ") or DEFAULT_PARTNER_SHARE)
+            lead_share = int(input(f"Lead Org Share % (e.g., 60) [{DEFAULT_LEAD_SHARE}]: ") or DEFAULT_LEAD_SHARE)
+            partner_share = int(input(f"Partner Org Share % (e.g., 40) [{DEFAULT_PARTNER_SHARE}]: ") or DEFAULT_PARTNER_SHARE)
             validate_share(lead_share, partner_share)
             break
         except ValueError as e:
             print(f"⚠️ Error: {e}. Please try again.\n")
 
     jv_name = f"{lead_short}-{partner_short} J.V."
-    jv_address = lead_address
 
     # Generate Bid Documents
     create_technical_bid_pdf(bid_number, contract_name, bid_date, bidder_name, jv_name, jv_address, email_address, employer_name, employer_address)
     create_price_bid_pdf(bid_number, contract_name, bid_date, bidder_name, jv_name, jv_address, email_address, employer_name, employer_address)
-    create_jv_agreement_pdf(bid_number, contract_name, bid_date, employer_name, employer_address, lead_org, partner_org, lead_short, partner_short, lead_address, partner_address, email_address, md1, md2, lead_share, partner_share, bidder_name)
+    create_jv_agreement_pdf(bid_number, contract_name, bid_date, employer_name, employer_address, lead_org, partner_org, bid_org, lead_short, partner_short, lead_address, partner_address, email_address, md1, md2, lead_share, partner_share, bidder_name, jv_address)
     create_work_methodology_pdf(bid_number, contract_name, bid_date, jv_name, jv_address, email_address, employer_name, employer_address)    
     create_mobilization_schedule_pdf(bid_number, contract_name, jv_name, jv_address, email_address)
-    create_org_chart_pdf(
-        bid_number=bid_number,
-        contract_name=contract_name,
-        bid_date=bid_date,
-        jv_name=jv_name,
-        jv_address=jv_address,
-        email_address=email_address
-    )
-    create_lead_poa_pdf(bid_number, contract_name, bid_date, employer_name, employer_address, DEFAULT_MD_LEAD, lead_org, lead_address, "letterhead_lead.pdf", f"POA_with_Declaration_{lead_short}.pdf")
-    create_partner_poa_pdf(bid_number, contract_name, bid_date, employer_name, employer_address, DEFAULT_MD_PARTNER, partner_org, partner_address, "letterhead_partner.pdf", f"POA_with_Declaration_{partner_short}.pdf")
-    print(f"\n📄 All PDFs saved to: {os.getcwd()}")
+    create_org_chart_pdf(bid_number, contract_name, bid_date, jv_name, jv_address, email_address)
+    
+    # Generate Separate POA and Declaration Documents
+    create_lead_poa_pdf(bid_number, contract_name, bid_date, employer_name, employer_address, md1, lead_org, lead_address, "letterhead_lead.pdf", f"POA_with_Declaration_{lead_short}.pdf")
+    create_partner_poa_pdf(bid_number, contract_name, bid_date, employer_name, employer_address, md2, partner_org, partner_address, "letterhead_partner.pdf", f"POA_with_Declaration_{partner_short}.pdf")
+    
+    print(f"\n📄 All PDFs successfully saved to: {os.path.abspath(OUTPUT_DIR)}")
 
 if __name__ == "__main__":
     main()
