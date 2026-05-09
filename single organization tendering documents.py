@@ -21,12 +21,12 @@ USE_PDF_LETTERHEAD = True
 # =====================================================
 # DEFAULTS
 # =====================================================
-DEFAULT_BID_NUMBER = "MoEST/CLPIU/GoN/Works/2082-083/NCB-01"
-DEFAULT_CONTRACT_NAME = "Construction of School Buildings in Three Schools of Rupandehi, Kaski and Palpa District (having 2000+ students)"
-DEFAULT_DATE = "January 6th, 2026"
+DEFAULT_BID_NUMBER = "PMWH/DP Funded/Works/NCB/01/2082-83"
+DEFAULT_CONTRACT_NAME = "Construction of 25-Bed Hospitals in Chandragiri Municipality and Mahalaxmi Municipality"
+DEFAULT_DATE = "April 18, 2026"
 DEFAULT_BIDDER_NAME = "Sabin Chaulagain"
-DEFAULT_EMPLOYER_NAME = "Central Level Project Implementation Unit (CLPIU)"
-DEFAULT_EMPLOYER_ADDRESS = "Sanothimi, Bhaktapur"
+DEFAULT_EMPLOYER_NAME = "Paropakar Maternity and Women's Hospital"
+DEFAULT_EMPLOYER_ADDRESS = "Thapathali, Kathmandu"
 DEFAULT_ORG_NAME = "Eco Builders and Engineers Pvt. Ltd."
 DEFAULT_ORG_ADDRESS = "Gokarneshwor-06, Kathmandu"
 DEFAULT_EMAIL = "ecobuilders12@gmail.com"
@@ -319,7 +319,7 @@ def create_technical_bid_pdf(bid_number, contract_name, bid_date,
         "g) We are not a government owned entity / we are a government owned entity but meet the Requirements of ITB 4.5;",
         "h) We declare that we including any subcontractor or suppliers for any part of the contract do not have any conflict of interest in accordance with ITB 4.3 and we have not been punished for an offense relating to the concerned profession or business.",
         "i) We declare that we are solely responsible for the authenticity of the documents submitted by us.",
-        "j) We agree to permit the Employer/DP or its representative to inspect our accounts and records and other documents relating to the bid submission and to have them audited by author appointed by the Employer.",
+        "j) We agree to permit the Employer/DP or its representative to inspect our accounts and records and other documents relating to the bid submission and to have them audited by auditors appointed by the Employer.",
         "k) If our Bid is accepted we commit to mobilizing key equipment and personnel in accordance with the requirements set forth in section III (Evaluation and Qualification Criteria) and our technical proposal, or as otherwise agreed with the employer.",
         "l) We declare that we have not running contracts more than five (5) in accordance with ITB 4.9",
         f"Name: <b>{bidder_name}</b><br/>In the Capacity of Attorney Person<br/><br/><br/><br/><br/><br/><br/>Signed...<br/>Duly authorized to sign the Bid for and on behalf of <b>{DEFAULT_ORG_NAME}</b><br/>Date: <b>{bid_date}</b>"
@@ -421,7 +421,7 @@ def create_poa_with_declaration_pdf(
     elements.append(Paragraph("<u><b>POWER OF ATTORNEY</b></u>", title_style))
     elements.append(Spacer(1, 12))
     elements.append(Paragraph(
-        f"Known all mean by these presents that we the undersigned, Board of Directors lawfully authorized to represent and act on behalf of the said firm under the Company Act do hereby authorize <b>{bidder_name}</b> of <b>{org_name}</b> Having its head office at {org_address}, Whose specimen signature appears as given below to run all business activities for, Modification negotiable with the Employer, dealing with running bill , Final bill and all the task of related offices operating by his single signature or to authorize any other person to operate on behalf of his authorization within Nepal and abroad, This undersigned shall acknowledge the legal effects of the signature of the said attorney holder after the signing and sealing of the power of attorney.",
+        f"Known all men by these presents that we the undersigned, Board of Directors lawfully authorized to represent and act on behalf of the said firm under the Company Act do hereby authorize <b>{bidder_name}</b> of <b>{org_name}</b> Having its head office at {org_address}, Whose specimen signature appears as given below to run all business activities for, negotiable with the Employer, dealing with running bill , Final bill and all the task of related offices operating by his single signature or to authorize any other person to operate on behalf of his authorization within Nepal and abroad, This undersigned shall acknowledge the legal effects of the signature of the said attorney holder after the signing and sealing of the power of attorney.",
          body_style_10
     ))
     elements.append(Spacer(1, 12))
@@ -515,7 +515,7 @@ def create_work_methodology_pdf(bid_number, contract_name, bid_date,
         "<b>B. <u><i>Narrative Description of site organization Chart :</i></u></b>",
         "The Project Manager is the responsible for successful implementation smooth execution and timely completion of whole work. He will receive information from head office, give suggestion, progress report from administration, technical and account section as well as guidelines, special instruction, suggestion and take timely action by issuing notice, instruction making on the spot-study in a bid achieve timely execution maintaining. cordial relation and good co-operation, However, the company also look after the project as per requirement and visit time to time. The whole site organization under the project manager will be divided informally in two section i.e. Technical, Administrative and Financial section.",
         "<b>(i) <u><i>Technical Section :</i></u></b>",
-        "This section shall comprise at least one Project Manager, one Experienced Civil Engineer, one Design Engineer, one Auto CAD operator, sufficient no’s of construction supervisor, mechanic operators etc. This section will sturdy drawing and specifications, take measurement of works, prepare running bills and submits the same to employer for payment on receipt of instructions from employer's representative and consultant regarding changes on include such changes in works. it will also monitor progress and take necessary action in time to keep pace with targeted schedule. This section will also look after machine requirement, its maintenance and running through mechanics and operators its job is also to prepare work schedule manpower schedule materials schedule, design drawing, survey, laboratory testing etc. However it can be more as the work is going to take in company.",
+        "This section shall comprise at least one Project Manager, one Experienced Civil Engineer, one Design Engineer, one Auto CAD operator, sufficient no’s of construction supervisor, mechanic operators etc. This section will study drawing and specifications, take measurement of works, prepare running bills and submits the same to employer for payment on receipt of instructions from employer's representative and consultant regarding changes on include such changes in works. it will also monitor progress and take necessary action in time to keep pace with targeted schedule. This section will also look after machine requirement, its maintenance and running through mechanics and operators its job is also to prepare work schedule manpower schedule materials schedule, design drawing, survey, laboratory testing etc. However it can be more as the work is going to take in company.",
         "<b>(ii) <u><i>Administrative/Account Section :</i></u></b>",
         "This section will deal correspondences maintain records of staff and workmen, appoint personal, look after insurance, compensation, safety measures, attendance, records of leave, afford and maintain transportation facilities, housing, medical and sanitation facilities. it will also increase or decrease substitute staffs, workmen depending on manpower schedule keeping close touch with head office normally all information area received at site-office through administrative section and also this section is though not directly connected to construction-activities, indispensable for construction management's. As the perfect is concerned with directly to the community, this section will comprise 1 Administrative cum procurement manager, one accountant one store keeper, one assistant, guards and peons etc. This section will also provide manpower-material and finance-schedule consultation with technical schedule to the project manager.",
     ]
@@ -578,7 +578,7 @@ def create_work_methodology_pdf(bid_number, contract_name, bid_date,
     elements.append(Paragraph("The full authority will be given to the Contract Manager. The head office, as requested by the Contract Manager will furnish financial management. Site office will inform all its major Activities including progress of the work to head office from time to tine interval. The head office will solve any major dispute which cannot be solved by the Contract Manager.", body_style))        
     elements.append(PageBreak())
 
-    doc.build(elements)
+    doc.build(elements, onFirstPage=add_technical_purposal_stamps, onLaterPages=add_technical_purposal_stamps)
     merge_with_letterhead(LETTERHEAD_FILE, temp, final)
 
 
@@ -644,7 +644,7 @@ def create_mobilization_schedule_pdf(bid_number, contract_name, email_address, o
               "After award and signing of contract, a detailed work, program/schedule will be submitted with performance guarantee. A technical team and pre-required construction tool/equipment will be deputed / mobilized at site. Drawings shall be read carefully and quantities of required construction materials will be worked out. A site office and a labor camp will be established within the construction site premises. A supervisor for labor management will be deputed at site. General requirements as per contract shall be fulfilled. During this period the site shall be prepared ready for immediate start of construction work.",
               "<b><u><i>Material Construction and transportation</i></u></b>",
               "Surveying, Designing if required execution of fields works, management of works preparation of bills, quality control, planning, scheduling and Progress review to asset requirements of construction materials equipment’s etc.",
-              "<b><u><i>Material Construction and transportation</i></u></b>",
+              "<b><u><i>Storage and Handling of Materials</i></u></b>",
               "The construction material will be transported from its source and dumped at site at a secure location selected a storage area built within the vicinity of construction site. During the time of mass construction work, materials will be dumped at site in sufficient quantity, and materials will be continually supplied as per requirement of the work. Sensitive materials like cement and other shall be stored in secure place at site. Transportation of construction materials shall go thoroughly during construction period.",
               "<b><u><i>Equipment and Labor force management work</i></u></b>",
               "Sufficient numbers of equipment will be brought as site and made stand by for connected work. Sufficient numbers of work force like skilled and unskilled labor will be hired. Not all labors will be hired at a time. As per the requirement of the work, labor numbers can be increased or decreased.",
