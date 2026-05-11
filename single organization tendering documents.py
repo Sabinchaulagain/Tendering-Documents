@@ -13,10 +13,19 @@ import os
 import math
 
 # =====================================================
+# DIRECTORY SETUP
+# =====================================================
+INPUT_DIR = "Inputs"
+OUTPUT_DIR = "Outputs"
+
+# Ensure directories exist
+os.makedirs(INPUT_DIR, exist_ok=True)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+# =====================================================
 # CONFIG
 # =====================================================
 USE_PDF_LETTERHEAD = True
-
 
 # =====================================================
 # DEFAULTS
@@ -39,7 +48,8 @@ LETTERHEAD_FILE = "letterhead.pdf"   # portrait only
 LANDSCAPE_LETTERHEAD_FILE = "letterhead_landscape.pdf"
 
 def get_landscape_letterhead():
-    if os.path.exists(LANDSCAPE_LETTERHEAD_FILE):
+    full_path = os.path.join(INPUT_DIR, LANDSCAPE_LETTERHEAD_FILE)
+    if os.path.exists(full_path):
         print("📄 Using external landscape letterhead")
         return "PDF"
     else:
@@ -50,24 +60,28 @@ def get_landscape_letterhead():
 # MERGE FUNCTION
 # =====================================================
 def merge_with_letterhead(letterhead_path, content_path, output_path):
+    try:
+        content = PdfReader(content_path)
+        writer = PdfWriter()
 
-    content = PdfReader(content_path)
-    writer = PdfWriter()
+        for i in range(len(content.pages)):
+            base = PdfReader(letterhead_path).pages[0]
+            base = deepcopy(base)
 
-    for i in range(len(content.pages)):
-        base = PdfReader(letterhead_path).pages[0]
-        base = deepcopy(base)
+            base.merge_page(content.pages[i])
+            writer.add_page(base)
 
-        base.merge_page(content.pages[i])
-        writer.add_page(base)
+        with open(output_path, "wb") as f:
+            writer.write(f)
 
-    with open(output_path, "wb") as f:
-        writer.write(f)
+        if os.path.exists(content_path):
+            os.remove(content_path)
 
-    os.remove(content_path)
-
-    print(f"✅ Created: {output_path}")
-
+        print(f"✅ Created: {os.path.basename(output_path)}")
+    except Exception as e:
+        print(f"⚠️ Warning: Could not merge with letterhead ({e}). Outputting standard PDF instead: {os.path.basename(output_path)}")
+        if os.path.exists(content_path):
+            os.rename(content_path, output_path)
 
 # =====================================================
 # STYLES
@@ -86,8 +100,8 @@ header_small = ParagraphStyle("HdrSmall", parent=styles["Normal"], alignment=TA_
 def add_org_chart_signature(canvas, doc):
     canvas.saveState()
     try:
-        sig = ImageReader("bidder_signature.png")
-        stamp = ImageReader("stamp.png")
+        sig = ImageReader(os.path.join(INPUT_DIR, "bidder_signature.png"))
+        stamp = ImageReader(os.path.join(INPUT_DIR, "stamp.png"))
 
         # Signature (bottom-left)
         canvas.drawImage(
@@ -112,7 +126,7 @@ def add_org_chart_signature(canvas, doc):
         )
 
     except Exception as e:
-        print("Warning: Org chart signature not added:", e)
+        pass # Suppress warning to keep output clean
 
     canvas.restoreState()
     
@@ -125,7 +139,7 @@ def draw_landscape_with_signature(canvas, doc):
 def add_mobilization_schedule_stamps(canvas, doc):
     canvas.saveState()
     try:
-        img1 = ImageReader("stamp.png")
+        img1 = ImageReader(os.path.join(INPUT_DIR, "stamp.png"))
         canvas.drawImage(img1, 
                         x=5.5*inch, 
                         y=5.8*inch, 
@@ -134,7 +148,7 @@ def add_mobilization_schedule_stamps(canvas, doc):
                         mask='auto',
                         preserveAspectRatio=True)
         
-        img2 = ImageReader("bidder_signature.png")
+        img2 = ImageReader(os.path.join(INPUT_DIR, "bidder_signature.png"))
         canvas.drawImage(img2,
                         x=4.5*inch,
                         y=5.8*inch,
@@ -144,18 +158,14 @@ def add_mobilization_schedule_stamps(canvas, doc):
                         preserveAspectRatio=True)
         
     except Exception as e:
-        # Fallback text if images not found
-        canvas.setFont("Helvetica-Bold", 10)
-        canvas.setFillColorRGB(1, 0, 0)
-        
-        print(f"Warning: Could not load stamp images - using text placeholders. Error: {e}")
+        pass
     finally:
         canvas.restoreState()
         
 def add_technical_purposal_stamps(canvas, doc):
     canvas.saveState()
     try:
-        img1 = ImageReader("stamp.png")
+        img1 = ImageReader(os.path.join(INPUT_DIR, "stamp.png"))
         canvas.drawImage(img1, 
                         x=5.5*inch, 
                         y=0.5*inch, 
@@ -164,7 +174,7 @@ def add_technical_purposal_stamps(canvas, doc):
                         mask='auto',
                         preserveAspectRatio=True)
         
-        img2 = ImageReader("bidder_signature.png")
+        img2 = ImageReader(os.path.join(INPUT_DIR, "bidder_signature.png"))
         canvas.drawImage(img2,
                         x=4.5*inch,
                         y=0.5*inch,
@@ -174,18 +184,14 @@ def add_technical_purposal_stamps(canvas, doc):
                         preserveAspectRatio=True)
       
     except Exception as e:
-        # Fallback text if images not found
-        canvas.setFont("Helvetica-Bold", 10)
-        canvas.setFillColorRGB(1, 0, 0)
-        
-        print(f"Warning: Could not load stamp images - using text placeholders. Error: {e}")
+        pass
     finally:
         canvas.restoreState()        
 
 def add_poa_stamps(canvas, doc):
     canvas.saveState()
     try:
-        img1 = ImageReader("stamp.png")
+        img1 = ImageReader(os.path.join(INPUT_DIR, "stamp.png"))
         canvas.drawImage(img1, 
                         x=6.5*inch, 
                         y=3*inch, 
@@ -194,7 +200,7 @@ def add_poa_stamps(canvas, doc):
                         mask='auto',
                         preserveAspectRatio=True)
     
-        img2 = ImageReader("bidder_signature.png")
+        img2 = ImageReader(os.path.join(INPUT_DIR, "bidder_signature.png"))
         canvas.drawImage(img2,
                         x=0.5*inch,
                         y=4.2*inch,
@@ -203,7 +209,7 @@ def add_poa_stamps(canvas, doc):
                         mask='auto',
                         preserveAspectRatio=True)
         
-        img3 = ImageReader("owner_signature.png")
+        img3 = ImageReader(os.path.join(INPUT_DIR, "owner_signature.png"))
         canvas.drawImage(img3,
                         x=5.5*inch,
                         y=3*inch,
@@ -213,18 +219,14 @@ def add_poa_stamps(canvas, doc):
                         preserveAspectRatio=True)
         
     except Exception as e:
-        # Fallback text if images not found
-        canvas.setFont("Helvetica-Bold", 10)
-        canvas.setFillColorRGB(1, 0, 0)
-        
-        print(f"Warning: Could not load stamp images - using text placeholders. Error: {e}")
+        pass
     finally:
         canvas.restoreState()
         
 def add_selfdec_stamps(canvas, doc):
     canvas.saveState()
     try:
-        img1 = ImageReader("stamp.png")
+        img1 = ImageReader(os.path.join(INPUT_DIR, "stamp.png"))
         canvas.drawImage(img1, 
                         x=2.5*inch, 
                         y=2.8*inch, 
@@ -233,7 +235,7 @@ def add_selfdec_stamps(canvas, doc):
                         mask='auto',
                         preserveAspectRatio=True)
     
-        img2 = ImageReader("bidder_signature.png")
+        img2 = ImageReader(os.path.join(INPUT_DIR, "bidder_signature.png"))
         canvas.drawImage(img2,
                         x=0.75*inch,
                         y=4.55*inch,
@@ -243,18 +245,14 @@ def add_selfdec_stamps(canvas, doc):
                         preserveAspectRatio=True)
         
     except Exception as e:
-        # Fallback text if images not found
-        canvas.setFont("Helvetica-Bold", 10)
-        canvas.setFillColorRGB(1, 0, 0)
-        
-        print(f"Warning: Could not load stamp images - using text placeholders. Error: {e}")
+        pass
     finally:
         canvas.restoreState()
         
 def add_bid_letter_stamp(canvas, doc):
     canvas.saveState()
     try:
-        img1 = ImageReader("stamp.png")
+        img1 = ImageReader(os.path.join(INPUT_DIR, "stamp.png"))
         canvas.drawImage(img1, 
                         x=1.3*inch, 
                         y=1.8*inch, 
@@ -263,7 +261,7 @@ def add_bid_letter_stamp(canvas, doc):
                         mask='auto',
                         preserveAspectRatio=True)
         
-        img2 = ImageReader("bidder_signature.png")
+        img2 = ImageReader(os.path.join(INPUT_DIR, "bidder_signature.png"))
         canvas.drawImage(img2,
                         x=0.5*inch,
                         y=1.8*inch,
@@ -273,11 +271,7 @@ def add_bid_letter_stamp(canvas, doc):
                         preserveAspectRatio=True)
         
     except Exception as e:
-        # Fallback text if images not found
-        canvas.setFont("Helvetica-Bold", 10)
-        canvas.setFillColorRGB(1, 0, 0)
-        
-        print(f"Warning: Could not load stamp images - using text placeholders. Error: {e}")
+        pass
     finally:
         canvas.restoreState()        
         
@@ -296,8 +290,8 @@ def create_technical_bid_pdf(bid_number, contract_name, bid_date,
                              email_address, employer_name, employer_address):
 
     safe = bid_number.replace("/", "-")
-    temp = "temp_tech.pdf"
-    final = f"Letter_of_Technical_Bid_{safe}.pdf"
+    temp = os.path.join(OUTPUT_DIR, "temp_tech.pdf")
+    final = os.path.join(OUTPUT_DIR, f"Letter_of_Technical_Bid_{safe}.pdf")
 
     doc = SimpleDocTemplate(temp, pagesize=A4, leftMargin=40, rightMargin=40, topMargin=150)
     elements = []
@@ -322,12 +316,12 @@ def create_technical_bid_pdf(bid_number, contract_name, bid_date,
         "j) We agree to permit the Employer/DP or its representative to inspect our accounts and records and other documents relating to the bid submission and to have them audited by auditors appointed by the Employer.",
         "k) If our Bid is accepted we commit to mobilizing key equipment and personnel in accordance with the requirements set forth in section III (Evaluation and Qualification Criteria) and our technical proposal, or as otherwise agreed with the employer.",
         "l) We declare that we have not running contracts more than five (5) in accordance with ITB 4.9",
-        f"Name: <b>{bidder_name}</b><br/>In the Capacity of Attorney Person<br/><br/><br/><br/><br/><br/><br/>Signed...<br/>Duly authorized to sign the Bid for and on behalf of <b>{DEFAULT_ORG_NAME}</b><br/>Date: <b>{bid_date}</b>"
+        f"Name: <b>{bidder_name}</b><br/>In the Capacity of Attorney Person<br/><br/><br/><br/><br/><br/><br/>Signed...<br/>Duly authorized to sign the Bid for and on behalf of <b>{org_name}</b><br/>Date: <b>{bid_date}</b>"
     ], body_style)
 
     doc.build(elements, onFirstPage=add_bid_letter_stamp)
 
-    merge_with_letterhead(LETTERHEAD_FILE, temp, final)
+    merge_with_letterhead(os.path.join(INPUT_DIR, LETTERHEAD_FILE), temp, final)
 
 
 # =====================================================
@@ -338,8 +332,8 @@ def create_price_bid_pdf(bid_number, contract_name, bid_date,
                          email_address, employer_name, employer_address):
 
     safe = bid_number.replace("/", "-")
-    temp = "temp_price.pdf"
-    final = f"Letter_of_Price_Bid_{safe}.pdf"
+    temp = os.path.join(OUTPUT_DIR, "temp_price.pdf")
+    final = os.path.join(OUTPUT_DIR, f"Letter_of_Price_Bid_{safe}.pdf")
 
     doc = SimpleDocTemplate(temp, pagesize=A4, leftMargin=40, rightMargin=40, topMargin=150)
     elements = []
@@ -376,13 +370,13 @@ def create_price_bid_pdf(bid_number, contract_name, bid_date,
         "i) We understand that you are not bound to accept the lowest evaluated bid or any other bid that you may receive and",
         "j) We declare that we are solely responsible for the authenticity of the documents submitted by us.",
         "k) We agree to permit the Employer/DP or its representative to inspect our accounts and records and other documents relating to the bid submission and to have them audited by author appointed by the Employer.",
-        f"Name: <b>{bidder_name}</b><br/>In the Capacity of Attorney Person<br/><br/><br/><br/><br/><br/><br/><br/>Signed...<br/>Duly authorized to sign the Bid for and on behalf of <b>{DEFAULT_ORG_NAME}</b><br/>Date: <b>{bid_date}</b>"
+        f"Name: <b>{bidder_name}</b><br/>In the Capacity of Attorney Person<br/><br/><br/><br/><br/><br/><br/><br/>Signed...<br/>Duly authorized to sign the Bid for and on behalf of <b>{org_name}</b><br/>Date: <b>{bid_date}</b>"
     ]
     add_paragraphs(elements, footer_texts, body_style)
 
     doc.build(elements, onFirstPage=add_bid_letter_stamp)
 
-    merge_with_letterhead(LETTERHEAD_FILE, temp, final)
+    merge_with_letterhead(os.path.join(INPUT_DIR, LETTERHEAD_FILE), temp, final)
 
 
 # =====================================================
@@ -401,9 +395,10 @@ def create_poa_with_declaration_pdf(
     output_name
 ):
 
-    temp_poa = "temp_poa_single.pdf"
-    temp_dec = "temp_dec_single.pdf"
-    temp_merge = "temp_merge_pages.pdf"
+    temp_poa = os.path.join(OUTPUT_DIR, "temp_poa_single.pdf")
+    temp_dec = os.path.join(OUTPUT_DIR, "temp_dec_single.pdf")
+    temp_merge = os.path.join(OUTPUT_DIR, "temp_merge_pages.pdf")
+    full_output_name = os.path.join(OUTPUT_DIR, output_name)
 
 
     # --- PAGE 1 ---
@@ -490,7 +485,7 @@ def create_poa_with_declaration_pdf(
     os.remove(temp_poa)
     os.remove(temp_dec)
 
-    merge_with_letterhead(letterhead_file, temp_merge, output_name)
+    merge_with_letterhead(os.path.join(INPUT_DIR, letterhead_file), temp_merge, full_output_name)
 
 
 
@@ -501,8 +496,8 @@ def create_work_methodology_pdf(bid_number, contract_name, bid_date,
                                 org_name, org_address, email_address):
 
     safe = bid_number.replace("/", "-")
-    temp = "temp_work.pdf"
-    final = f"Work_Methodology_{safe}.pdf"
+    temp = os.path.join(OUTPUT_DIR, "temp_work.pdf")
+    final = os.path.join(OUTPUT_DIR, f"Work_Methodology_{safe}.pdf")
 
     doc = SimpleDocTemplate(temp, pagesize=A4, leftMargin=40, rightMargin=40, topMargin=150)
     elements = []
@@ -523,7 +518,7 @@ def create_work_methodology_pdf(bid_number, contract_name, bid_date,
     elements.append(PageBreak())
 
     elements.append(Paragraph("PROPOSED WORK METHODOLOGY", title_style))
-    elements.append(Paragraph(f"<u><b>Name of the Applicant : {DEFAULT_ORG_NAME}</b></u>", title_style))
+    elements.append(Paragraph(f"<u><b>Name of the Applicant : {org_name}</b></u>", title_style))
     elements.append(Spacer(1, 10))
 
     body_texts = [
@@ -579,7 +574,7 @@ def create_work_methodology_pdf(bid_number, contract_name, bid_date,
     elements.append(PageBreak())
 
     doc.build(elements, onFirstPage=add_technical_purposal_stamps, onLaterPages=add_technical_purposal_stamps)
-    merge_with_letterhead(LETTERHEAD_FILE, temp, final)
+    merge_with_letterhead(os.path.join(INPUT_DIR, LETTERHEAD_FILE), temp, final)
 
 
 
@@ -590,8 +585,8 @@ def create_work_methodology_pdf(bid_number, contract_name, bid_date,
 
 def create_mobilization_schedule_pdf(bid_number, contract_name, email_address, org_name, org_address):
     safe = bid_number.replace("/", "-")
-    temp = "temp_mobilization.pdf"
-    final = f"Mobilization_Schedule_{safe}.pdf"
+    temp = os.path.join(OUTPUT_DIR, "temp_mobilization.pdf")
+    final = os.path.join(OUTPUT_DIR, f"Mobilization_Schedule_{safe}.pdf")
     
     try:
         doc = SimpleDocTemplate(temp, pagesize=A4,
@@ -602,7 +597,7 @@ def create_mobilization_schedule_pdf(bid_number, contract_name, email_address, o
         elements.append(Spacer(1, 15))
         elements.append(Paragraph(f"Name of Project: <b>{contract_name}</b>", body_style))
         elements.append(Paragraph(f"Contract Identification No.: <b>{bid_number}</b>", body_style))
-        elements.append(Paragraph(f"Proposed By: <b>{DEFAULT_ORG_NAME}</b>", body_style))
+        elements.append(Paragraph(f"Proposed By: <b>{org_name}</b>", body_style))
         elements.append(Paragraph("MOBILIZATION SCHEDULE", title_style))
         elements.append(Spacer(1, 10))
                 
@@ -661,8 +656,8 @@ def create_mobilization_schedule_pdf(bid_number, contract_name, email_address, o
         
         doc.build(elements, onFirstPage=add_mobilization_schedule_stamps, onLaterPages=add_technical_purposal_stamps)
         
-        merge_with_letterhead(LETTERHEAD_FILE, temp, final)
-        print(f"✅ Mobilization Schedule PDF created: {final}")
+        merge_with_letterhead(os.path.join(INPUT_DIR, LETTERHEAD_FILE), temp, final)
+        print(f"✅ Mobilization Schedule PDF created: {os.path.basename(final)}")
     except Exception as e:
         print(f"❌ Failed to create Mobilization Schedule PDF: {e}")
 
@@ -726,7 +721,7 @@ def create_org_chart_pdf(bid_number, contract_name,
                          org_name, org_address, email_address):
 
     safe = bid_number.replace("/", "-")
-    final = f"Organizational_Chart_{safe}.pdf"
+    final = os.path.join(OUTPUT_DIR, f"Organizational_Chart_{safe}.pdf")
 
     doc = SimpleDocTemplate(final, pagesize=landscape(A4),
                             rightMargin=10, leftMargin=10, topMargin=90, bottomMargin=10)
@@ -896,7 +891,7 @@ def create_org_chart_pdf(bid_number, contract_name,
     mode = get_landscape_letterhead()
     if mode == "PDF":
     # Build temp first
-        temp = "temp_org.pdf"
+        temp = os.path.join(OUTPUT_DIR, "temp_org.pdf")
         doc_temp = SimpleDocTemplate(
             temp,
             pagesize=landscape(A4),
@@ -908,7 +903,7 @@ def create_org_chart_pdf(bid_number, contract_name,
         doc_temp.build(elements,onFirstPage=add_org_chart_signature,onLaterPages=add_org_chart_signature)
     # merge external letterhead
         merge_with_letterhead(
-            LANDSCAPE_LETTERHEAD_FILE,
+            os.path.join(INPUT_DIR, LANDSCAPE_LETTERHEAD_FILE),
             temp,
             final
             )
@@ -916,7 +911,7 @@ def create_org_chart_pdf(bid_number, contract_name,
     # use auto header
        doc.build(elements,onFirstPage=draw_landscape_with_signature,onLaterPages=draw_landscape_with_signature)
     
-    print(f"✅ Created: {final}")
+    print(f"✅ Created: {os.path.basename(final)}")
 
 
 
@@ -924,6 +919,10 @@ def create_org_chart_pdf(bid_number, contract_name,
 # MAIN
 # =====================================================
 def main():
+
+    print(f"\n📁 Checking directories...")
+    print(f"   -> Please place your images/letterheads in: {os.path.abspath(INPUT_DIR)}")
+    print(f"   -> Generated PDFs will be saved to: {os.path.abspath(OUTPUT_DIR)}\n")
 
     bid_number = input(f"IFB No. [{DEFAULT_BID_NUMBER}]: ") or DEFAULT_BID_NUMBER
     contract_name = input(f"Contract Name [{DEFAULT_CONTRACT_NAME}]: ") or DEFAULT_CONTRACT_NAME
@@ -963,7 +962,7 @@ def main():
         f"POA_and_Declaration_{bid_number.replace('/', '-')}.pdf"
     )
     create_mobilization_schedule_pdf(bid_number, contract_name, email, org_name, org_address)
-    print("\n📄 ALL PDFs CREATED SUCCESSFULLY\n")
+    print(f"\n📄 ALL PDFs CREATED SUCCESSFULLY AND SAVED TO: {os.path.abspath(OUTPUT_DIR)}\n")
 
 
 if __name__ == "__main__":
